@@ -117,7 +117,7 @@ export function UsedInTree({
   }));
 
   return (
-    <VStack className="w-full p-2">
+    <VStack className="w-full p-2 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-accent h-full">
       <HStack className="w-full py">
         <InputGroup size="sm" className="flex flex-grow">
           <InputLeftElement>
