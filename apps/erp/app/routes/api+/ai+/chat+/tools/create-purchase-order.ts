@@ -20,6 +20,7 @@ export const config: ToolConfig = {
   name: "createPurchaseOrder",
   icon: LuShoppingCart,
   displayText: "Creating a Purchase Order",
+  message: "Creating a purchase order...",
 };
 
 export const createPurchaseOrderSchema = z.object({

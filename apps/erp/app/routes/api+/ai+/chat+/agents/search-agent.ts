@@ -3,6 +3,14 @@ import { webSearchTool } from "../tools/web-search";
 import { purchasingAgent } from "./purchasing-agent";
 import { createAgent } from "./shared/agent";
 import { COMMON_AGENT_RULES, formatContextForLLM } from "./shared/prompts";
+import type { AgentConfig } from "./shared/tools";
+
+export const config: AgentConfig = {
+  name: "general",
+  displayName: "General Agent",
+  description: "Handles general questions and web searches",
+  executingMessage: "Searching the web...",
+};
 
 export const searchAgent = createAgent({
   name: "general",

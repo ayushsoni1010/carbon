@@ -1,4 +1,4 @@
-import type { ToolConfig } from "./agents/shared/tools";
+import type { ToolConfig } from "../agents/shared/tools";
 
 // Dynamically import all tool configs
 const toolModules = import.meta.glob("./tools/*/index.ts", {
@@ -13,27 +13,29 @@ const directToolModules = import.meta.glob("./tools/*.ts", {
 // Combine both patterns and create the config object
 export const toolConfigs: Record<
   string,
-  Pick<ToolConfig, "icon" | "displayText">
+  Pick<ToolConfig, "icon" | "displayText" | "message">
 > = {
   ...Object.values(toolModules).reduce((acc, module) => {
     if (module.config) {
       acc[module.config.name] = {
         icon: module.config.icon,
         displayText: module.config.displayText,
+        message: module.config.message,
       };
     }
     return acc;
-  }, {} as Record<string, Pick<ToolConfig, "icon" | "displayText">>),
+  }, {} as Record<string, Pick<ToolConfig, "icon" | "displayText" | "message">>),
 
   ...Object.values(directToolModules).reduce((acc, module) => {
     if (module.config) {
       acc[module.config.name] = {
         icon: module.config.icon,
         displayText: module.config.displayText,
+        message: module.config.message,
       };
     }
     return acc;
-  }, {} as Record<string, Pick<ToolConfig, "icon" | "displayText">>),
+  }, {} as Record<string, Pick<ToolConfig, "icon" | "displayText" | "message">>),
 };
 
 console.log(toolConfigs);

@@ -5,6 +5,14 @@ import { getSupplierTool } from "../tools/get-supplier";
 import { getSupplierForPartsTool } from "../tools/get-supplier-for-parts";
 import { createAgent } from "./shared/agent";
 import { COMMON_AGENT_RULES, formatContextForLLM } from "./shared/prompts";
+import type { AgentConfig } from "./shared/tools";
+
+export const config: AgentConfig = {
+  name: "purchasing",
+  displayName: "Purchasing Agent",
+  description: "Creates purchase orders and gets quotes from suppliers",
+  executingMessage: "Calling the purchasing agent...",
+};
 
 export const purchasingAgent = createAgent({
   name: "purchasing",

@@ -10,6 +10,7 @@ export const config: ToolConfig = {
   name: "webSearch",
   icon: LuGlobe,
   displayText: "Searching the Web",
+  message: "Searching the web...",
 };
 
 // Static tool that uses context at execution time via experimental_context

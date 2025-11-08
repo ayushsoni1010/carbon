@@ -1,13 +1,8 @@
 import { cn, TextShimmer } from "@carbon/react";
 import type { IconType } from "react-icons";
+import { LuBrain } from "react-icons/lu";
+import { toolConfigs as toolDisplayConfig } from "~/routes/api+/ai+/chat+/tools/config";
 
-import { toolConfigs as toolDisplayConfig } from "~/routes/api+/ai+/chat+/config";
-
-export interface ToolConfig {
-  name: string;
-  icon: IconType;
-  description?: string;
-}
 export type SupportedToolName = keyof typeof toolDisplayConfig;
 
 export interface ToolCallIndicatorProps {
@@ -16,7 +11,23 @@ export interface ToolCallIndicatorProps {
 }
 
 export function getToolIcon(toolName: SupportedToolName): IconType | null {
+  if (toolName === "handoff_to_agent") {
+    return LuBrain;
+  }
+  if (toolName === "updateWorkingMemory") {
+    return LuBrain;
+  }
   return toolDisplayConfig[toolName]?.icon ?? null;
+}
+
+export function getToolMessage(toolName: SupportedToolName): string | null {
+  if (toolName === "handoff_to_agent") {
+    return "Connecting you with the right specialist...";
+  }
+  if (toolName === "updateWorkingMemory") {
+    return "Updating working memory...";
+  }
+  return toolDisplayConfig[toolName]?.message ?? null;
 }
 
 export function ToolCallIndicator({

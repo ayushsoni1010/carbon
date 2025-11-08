@@ -68,6 +68,8 @@
     "prepare": "npx husky install",
     "setup": "turbo run setup",
     "test": "turbo run test",
+    "tool:new": "tsx scripts/create-tool.ts",
+    "agent:new": "tsx scripts/create-agent.ts",
     "types": "turbo run types"
   },
   "workspaces": [

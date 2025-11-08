@@ -3,6 +3,14 @@ import { purchasingAgent } from "./purchasing-agent";
 import { searchAgent } from "./search-agent";
 import { createAgent } from "./shared/agent";
 import { formatContextForLLM } from "./shared/prompts";
+import type { AgentConfig } from "./shared/tools";
+
+export const config: AgentConfig = {
+  name: "triage",
+  displayName: "Triage Agent",
+  description: "Routes user requests to the appropriate specialist",
+  executingMessage: "Thinking...",
+};
 
 export const orchestrationAgent = createAgent({
   name: "triage",

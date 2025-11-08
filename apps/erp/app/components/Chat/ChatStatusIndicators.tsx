@@ -1,9 +1,9 @@
 import { AnimatedStatus } from "./AnimatedStatus";
-import { getStatusMessage, getToolMessage } from "./lib/agent";
+import { getStatusMessage } from "./lib/agent";
 
 import type { AgentStatus } from "./lib/types";
 import { Loader } from "./Loader";
-import { getToolIcon } from "./ToolCallIndicator";
+import { getToolIcon, getToolMessage } from "./ToolCallIndicator";
 
 interface ChatStatusIndicatorsProps {
   agentStatus: AgentStatus | null;
@@ -17,7 +17,7 @@ export function ChatStatusIndicators({
   status,
 }: ChatStatusIndicatorsProps) {
   const statusMessage = getStatusMessage(agentStatus);
-  const toolMessage = getToolMessage(currentToolCall);
+  const toolMessage = currentToolCall ? getToolMessage(currentToolCall) : null;
 
   // Always prioritize tool message over agent status when a tool is running
   const displayMessage = toolMessage || statusMessage;

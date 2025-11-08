@@ -12,6 +12,7 @@ export const config: ToolConfig = {
   name: "getSupplierForParts",
   icon: LuSearch,
   displayText: "Getting Supplier for Parts",
+  message: "Searching for suppliers for parts...",
 };
 
 export const getSupplierForPartsSchema = z.object({

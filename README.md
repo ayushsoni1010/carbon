@@ -228,7 +228,31 @@ After installation you should be able run the apps locally.
 | Mailpit         | [http://localhost:54324](http://localhost:54324)                                                                   |
 | Edge Functions  | [http://localhost:54321/functions/v1/<function-name>](http://localhost:54321/functions/v1/<function-name>)         |
 
-### Notes
+### Commands
+
+To add an edge function
+
+```bash
+$ npm run db:function:new <name>
+```
+
+To add a database migration
+
+```bash
+$ npm run db:migrate:new <name>
+```
+
+To add an AI agent
+
+```bash
+$ npm run agent:new <name>
+```
+
+To add an AI tool
+
+```bash
+$ npm run tool:new <name>
+```
 
 To kill the database containers in a non-recoverable way, you can run:
 

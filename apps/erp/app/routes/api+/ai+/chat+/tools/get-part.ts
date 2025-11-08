@@ -9,6 +9,7 @@ export const config: ToolConfig = {
   name: "getPart",
   icon: LuSearch,
   displayText: "Getting Part",
+  message: "Searching for a part...",
 };
 
 export const getPartSchema = z

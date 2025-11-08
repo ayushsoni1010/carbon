@@ -12,6 +12,7 @@ export const config: ToolConfig = {
   name: "getSupplier",
   icon: LuSearch,
   displayText: "Getting Supplier",
+  message: "Searching for a supplier...",
 };
 
 export const getSupplierSchema = z
