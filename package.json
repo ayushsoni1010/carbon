@@ -78,7 +78,7 @@
     "examples/*",
     "packages/*"
   ],
-  "packageManager": "npm@10.7.0",
+  "packageManager": "npm@10.8.2",
   "dependencies": {
     "sst": "3.17.14"
   }

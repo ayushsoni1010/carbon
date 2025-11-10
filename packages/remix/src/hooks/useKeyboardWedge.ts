@@ -25,7 +25,6 @@ export function useKeyboardWedge(options?: UseKeyboardWedgeOptions) {
   const test = options?.test ?? defaultTest;
   const callback = options?.callback ?? defaultCallback;
   const active = options?.active ?? true;
-  console.log(inputBuffer);
 
   useEffect(() => {
     if (!active) return;

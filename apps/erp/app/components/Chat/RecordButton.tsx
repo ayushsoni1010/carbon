@@ -216,7 +216,7 @@ export const RecordButton = forwardRef<RecordButtonRef, RecordButtonProps>(
         disabled={disabled}
         className={cn(
           isRecording &&
-            "text-emerald-500 hover:text-emerald-500 [&_svg]:text-emerald-500 [&_svg]:hover:text-emerald-500",
+            "text-indigo-600 hover:text-indigo-600 [&_svg]:text-indigo-600 [&_svg]:hover:text-indigo-600",
           disabled && "opacity-50",
           className
         )}

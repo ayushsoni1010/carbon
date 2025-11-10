@@ -19,7 +19,7 @@ export function useAudioRecording(): UseAudioRecordingReturn {
   const recordingTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Hard limit: 1 minute (60 seconds)
-  const MAX_RECORDING_TIME = 60 * 1000; // 60 seconds in milliseconds
+  const MAX_RECORDING_TIME = 15 * 1000; // 15 seconds in milliseconds
 
   const stopRecording = useCallback(async (): Promise<Blob | null> => {
     return new Promise((resolve) => {
@@ -90,18 +90,20 @@ export function useAudioRecording(): UseAudioRecordingReturn {
 
       // Set up auto-stop timer for 1 minute limit
       recordingTimerRef.current = setTimeout(() => {
-        console.log("Recording automatically stopped after 1 minute");
+        console.log("Recording automatically stopped after 15 seconds");
         stopRecording();
       }, MAX_RECORDING_TIME);
     } catch (error) {
       console.error("Error starting audio recording:", error);
       throw error;
     }
-  }, [stopRecording]);
+  }, [MAX_RECORDING_TIME, stopRecording]);
 
-  
   const { accessToken } = useCarbon();
-  const { id: userId, company: { id: companyId } } = useUser();
+  const {
+    id: userId,
+    company: { id: companyId },
+  } = useUser();
   const transcribeAudio = useCallback(
     async (audioBlob: Blob): Promise<string> => {
       setIsProcessing(true);
@@ -112,28 +114,25 @@ export function useAudioRecording(): UseAudioRecordingReturn {
         const base64Audio = btoa(
           new Uint8Array(arrayBuffer).reduce(
             (data, byte) => data + String.fromCharCode(byte),
-            "",
-          ),
+            ""
+          )
         );
 
         // Get authenticated session
         const transcriptionUrl = `${SUPABASE_URL}/functions/v1/transcription`;
-        const response = await fetch(
-          transcriptionUrl,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${accessToken}`,
-              "x-company-id": companyId,
-              "x-user-id": userId,
-            },
-            body: JSON.stringify({
-              audio: base64Audio,
-              mimeType: audioBlob.type,
-            }),
+        const response = await fetch(transcriptionUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+            "x-company-id": companyId,
+            "x-user-id": userId,
           },
-        );
+          body: JSON.stringify({
+            audio: base64Audio,
+            mimeType: audioBlob.type,
+          }),
+        });
 
         if (!response.ok) {
           const errorText = await response.text();
@@ -143,7 +142,7 @@ export function useAudioRecording(): UseAudioRecordingReturn {
             body: errorText,
           });
           throw new Error(
-            `Failed to transcribe audio: ${response.status} ${response.statusText}`,
+            `Failed to transcribe audio: ${response.status} ${response.statusText}`
           );
         }
 
@@ -161,7 +160,7 @@ export function useAudioRecording(): UseAudioRecordingReturn {
         setIsProcessing(false);
       }
     },
-    [],
+    [accessToken, companyId, userId]
   );
 
   return {

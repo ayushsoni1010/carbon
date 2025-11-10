@@ -1,41 +1,25 @@
 import type { ToolConfig } from "../agents/shared/tools";
 
-// Dynamically import all tool configs
-const toolModules = import.meta.glob("./tools/*/index.ts", {
+// Dynamically import all tool configs from sibling files
+// Exclude config.ts itself to avoid circular imports
+const toolModules = import.meta.glob("./*.ts", {
   eager: true,
 }) as Record<string, { config: ToolConfig }>;
 
-// Alternative pattern for direct tool files
-const directToolModules = import.meta.glob("./tools/*.ts", {
-  eager: true,
-}) as Record<string, { config: ToolConfig }>;
-
-// Combine both patterns and create the config object
+// Create the config object from imported tool modules
 export const toolConfigs: Record<
   string,
   Pick<ToolConfig, "icon" | "displayText" | "message">
-> = {
-  ...Object.values(toolModules).reduce((acc, module) => {
-    if (module.config) {
-      acc[module.config.name] = {
-        icon: module.config.icon,
-        displayText: module.config.displayText,
-        message: module.config.message,
-      };
-    }
-    return acc;
-  }, {} as Record<string, Pick<ToolConfig, "icon" | "displayText" | "message">>),
+> = Object.entries(toolModules).reduce((acc, [path, module]) => {
+  // Skip config.ts itself to avoid circular imports
+  if (path.includes("config.ts")) return acc;
 
-  ...Object.values(directToolModules).reduce((acc, module) => {
-    if (module.config) {
-      acc[module.config.name] = {
-        icon: module.config.icon,
-        displayText: module.config.displayText,
-        message: module.config.message,
-      };
-    }
-    return acc;
-  }, {} as Record<string, Pick<ToolConfig, "icon" | "displayText" | "message">>),
-};
-
-console.log(toolConfigs);
+  if (module.config) {
+    acc[module.config.name] = {
+      icon: module.config.icon,
+      displayText: module.config.displayText,
+      message: module.config.message,
+    };
+  }
+  return acc;
+}, {} as Record<string, Pick<ToolConfig, "icon" | "displayText" | "message">>);
