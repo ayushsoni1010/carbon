@@ -2,6 +2,7 @@ import { cn, Copy, Input, InputGroup, InputRightElement } from "@carbon/react";
 import { isBrowser } from "@carbon/utils";
 import type { SVGProps } from "react";
 import { z } from "zod";
+import { zfd } from "zod-form-data";
 import type { IntegrationConfig } from "../types";
 
 export const PaperlessParts: IntegrationConfig = {
@@ -47,6 +48,13 @@ export const PaperlessParts: IntegrationConfig = {
       required: false,
       value: "Inventory",
     },
+    {
+      name: "usePaperlessOrderNumber",
+      label: "Use Paperless Order Number",
+      type: "switch",
+      required: false,
+      value: false,
+    },
   ],
   schema: z.object({
     apiKey: z.string().min(1, { message: "API Key is required" }),
@@ -55,6 +63,7 @@ export const PaperlessParts: IntegrationConfig = {
       .min(1, { message: "Webhook Signing Secret is required" }),
     methodType: z.enum(["Buy", "Pick"]),
     trackingType: z.enum(["Inventory", "Non-Inventory", "Batch"]),
+    usePaperlessOrderNumber: zfd.checkbox(),
   }),
 };
 

@@ -106,6 +106,7 @@ const paperlessPartsSchema = z.object({
 const integrationSchema = z.object({
   methodType: z.enum(["Buy", "Pick"]).optional(),
   trackingType: z.enum(["Inventory", "Non-Inventory", "Batch"]).optional(),
+  usePaperlessOrderNumber: z.boolean().optional(),
 });
 
 export const paperlessPartsTask = task({
@@ -146,11 +147,15 @@ export const paperlessPartsTask = task({
     const integrationData = integrationSchema.safeParse(
       integration.data.metadata
     );
+    let usePaperlessOrderNumber = false;
     let methodType: "Buy" | "Pick" = "Pick";
     let trackingType: "Inventory" | "Non-Inventory" | "Batch" = "Inventory";
     if (integrationData.success) {
       methodType = integrationData.data.methodType;
       trackingType = integrationData.data.trackingType;
+      if (integrationData.data.usePaperlessOrderNumber) {
+        usePaperlessOrderNumber = true;
+      }
     }
 
     switch (payload.payload.type) {
@@ -218,15 +223,21 @@ export const paperlessPartsTask = task({
           throw new Error("Failed to get customer contact ID");
         }
 
-        // Create a new quote in Carbon
-        const nextSequence = await getNextSequence(
-          carbon,
-          "quote",
-          payload.companyId
-        );
+        let quoteReadableId: string;
+        if (usePaperlessOrderNumber) {
+          quoteReadableId = ppQuote.data.number.toString();
+        } else {
+          const nextSequence = await getNextSequence(
+            carbon,
+            "quote",
+            payload.companyId
+          );
 
-        if (!nextSequence.data) {
-          throw new Error("Failed to get next sequence number for quote");
+          if (!nextSequence.data) {
+            throw new Error("Failed to get next sequence number for quote");
+          }
+
+          quoteReadableId = nextSequence.data;
         }
 
         // Create a quote object from the Paperless Parts data
@@ -234,7 +245,7 @@ export const paperlessPartsTask = task({
           companyId: payload.companyId,
           customerId: quoteCustomerId,
           customerContactId: quoteCustomerContactId,
-          quoteId: nextSequence.data.toString(),
+          quoteId: quoteReadableId,
           name: `Quote for ${
             ppQuote.data.contact?.account?.name ||
             `${ppQuote.data.contact?.first_name} ${ppQuote.data.contact?.last_name}`
@@ -464,29 +475,34 @@ export const paperlessPartsTask = task({
           shippingInfo: orderData.shipping_info,
         });
 
-        const [
-          salesOrderSequence,
-          orderCustomerPayment,
-          orderCustomerShipping,
-          orderOpportunity,
-        ] = await Promise.all([
-          getNextSequence(carbon, "salesOrder", payload.companyId),
-          getCustomerPayment(carbon, orderCustomerId),
-          getCustomerShipping(carbon, orderCustomerId),
-          carbon
-            .from("opportunity")
-            .insert([
-              {
-                customerId: orderCustomerId,
-                companyId: payload.companyId,
-              },
-            ])
-            .select("id")
-            .single(),
-        ]);
+        const [orderCustomerPayment, orderCustomerShipping, orderOpportunity] =
+          await Promise.all([
+            getCustomerPayment(carbon, orderCustomerId),
+            getCustomerShipping(carbon, orderCustomerId),
+            carbon
+              .from("opportunity")
+              .insert([
+                {
+                  customerId: orderCustomerId,
+                  companyId: payload.companyId,
+                },
+              ])
+              .select("id")
+              .single(),
+          ]);
 
-        if (salesOrderSequence.error) {
-          throw new Error("Failed to get sequence");
+        let salesOrderReadableId: string;
+        if (usePaperlessOrderNumber) {
+          salesOrderReadableId = orderNumber.toString();
+        } else {
+          const nextSequence = await getNextSequence(
+            carbon,
+            "salesOrder",
+            payload.companyId
+          );
+          if (nextSequence.error) {
+            throw new Error("Failed to get sequence");
+          }
         }
         if (orderCustomerPayment.error) {
           throw new Error("Failed to get customer payment");
@@ -510,15 +526,11 @@ export const paperlessPartsTask = task({
           throw new Error("Failed to create opportunity");
         }
 
-        if (!salesOrderSequence.data) {
-          throw new Error("Failed to get next sequence number for sales order");
-        }
-
         const salesOrderInsert = await carbon
           .from("salesOrder")
           .insert([
             {
-              salesOrderId: salesOrderSequence.data,
+              salesOrderId: salesOrderReadableId,
               companyId: payload.companyId,
               createdBy: orderCreatedBy,
               currencyCode: company.data?.baseCurrencyCode,
