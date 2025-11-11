@@ -41,4 +41,4 @@ jobs:
           TRIGGER_PROJECT_ID: ${{ secrets[matrix.environment.project_id] }}
         run: |
           cd packages/jobs
-          npx trigger.dev@3.3.12 deploy
+          npx trigger.dev@4.0.6 deploy
