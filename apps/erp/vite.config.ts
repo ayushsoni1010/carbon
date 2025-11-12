@@ -39,8 +39,11 @@ export default defineConfig({
     remix({
       presets: process.env.VERCEL === "1" ? [vercelPreset()] : [],
       future: {
-        unstable_singleFetch: false,
-        unstable_lazyRouteDiscovery: false,
+        v3_singleFetch: true,
+        v3_fetcherPersist: true,
+        v3_lazyRouteDiscovery: true,
+        v3_relativeSplatPath: true,
+        v3_throwAbortReason: true,
       },
       ignoredRouteFiles: ["**/.*"],
       serverModuleFormat: "esm",
