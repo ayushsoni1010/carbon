@@ -1,4 +1,4 @@
-import { useEditor } from "novel";
+import { useEditor } from "@carbon/tiptap";
 import { useEffect, useRef } from "react";
 import { LuCheck, LuLink, LuTrash } from "react-icons/lu";
 import { IconButton } from "../../IconButton";

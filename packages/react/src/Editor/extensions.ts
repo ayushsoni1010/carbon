@@ -1,10 +1,3 @@
-import { Extension, Node } from "@tiptap/core";
-import Table from "@tiptap/extension-table";
-import TableCell from "@tiptap/extension-table-cell";
-import TableHeader from "@tiptap/extension-table-header";
-import TableRow from "@tiptap/extension-table-row";
-import { Plugin, PluginKey } from "@tiptap/pm/state";
-import { cx } from "class-variance-authority";
 import {
   AIHighlight,
   HorizontalRule,
@@ -16,7 +9,14 @@ import {
   TiptapLink,
   UpdatedImage,
   UploadImagesPlugin,
-} from "novel";
+} from "@carbon/tiptap";
+import { Extension, Node } from "@tiptap/core";
+import Table from "@tiptap/extension-table";
+import TableCell from "@tiptap/extension-table-cell";
+import TableHeader from "@tiptap/extension-table-header";
+import TableRow from "@tiptap/extension-table-row";
+import { Plugin, PluginKey } from "@tiptap/pm/state";
+import { cx } from "class-variance-authority";
 
 // Video regex patterns
 const LOOM_REGEX = /https:\/\/www\.loom\.com\/share\/([a-zA-Z0-9]+)/;

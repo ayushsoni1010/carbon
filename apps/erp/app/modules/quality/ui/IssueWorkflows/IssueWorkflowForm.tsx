@@ -5,13 +5,13 @@ import {
   Button,
   Card,
   CardContent,
+  generateHTML,
   Heading,
   HStack,
   toast,
   VStack,
-  generateHTML,
 } from "@carbon/react";
-import { Editor } from "@carbon/react/Editor.client";
+import { Editor } from "@carbon/react/Editor";
 import { nanoid } from "nanoid";
 import { useState } from "react";
 import type { z } from "zod/v3";

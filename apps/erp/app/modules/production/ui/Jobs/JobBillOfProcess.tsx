@@ -46,7 +46,7 @@ import {
   useMount,
   VStack,
 } from "@carbon/react";
-import { Editor } from "@carbon/react/Editor.client";
+import { Editor } from "@carbon/react/Editor";
 import {
   formatDateTime,
   formatDurationMilliseconds,

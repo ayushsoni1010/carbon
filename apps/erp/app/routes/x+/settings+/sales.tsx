@@ -7,6 +7,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
+  generateHTML,
   Heading,
   HStack,
   Label,
@@ -14,7 +15,7 @@ import {
   toast,
   useDebounce,
   VStack,
- generateHTML } from "@carbon/react";
+} from "@carbon/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@vercel/remix";
 import { json, redirect } from "@vercel/remix";
 
@@ -37,7 +38,7 @@ import type { Handle } from "~/utils/handle";
 import { path } from "~/utils/path";
 
 import type { JSONContent } from "@carbon/react";
-import { Editor } from "@carbon/react/Editor.client";
+import { Editor } from "@carbon/react/Editor";
 import { getLocalTimeZone, today } from "@internationalized/date";
 import { LuCircleCheck } from "react-icons/lu";
 import { usePermissions, useUser } from "~/hooks";

@@ -1,5 +1,5 @@
-import type { EditorInstance } from "novel";
-import { EditorBubbleItem, useEditor } from "novel";
+import type { EditorInstance } from "@carbon/tiptap";
+import { EditorBubbleItem, useEditor } from "@carbon/tiptap";
 import type { IconType } from "react-icons";
 import {
   LuCheck,

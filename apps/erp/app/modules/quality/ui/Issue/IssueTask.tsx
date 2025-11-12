@@ -10,6 +10,7 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
+  generateHTML,
   HStack,
   IconButton,
   Popover,
@@ -19,9 +20,8 @@ import {
   toast,
   useDebounce,
   useDisclosure,
-  generateHTML,
 } from "@carbon/react";
-import { Editor } from "@carbon/react/Editor.client";
+import { Editor } from "@carbon/react/Editor";
 import { formatDate } from "@carbon/utils";
 import { parseDate } from "@internationalized/date";
 import { useFetchers, useParams, useSubmit } from "@remix-run/react";

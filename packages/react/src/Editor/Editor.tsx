@@ -1,7 +1,6 @@
 "use client";
 
-import TextStyle from "@tiptap/extension-text-style";
-import type { JSONContent } from "novel";
+import type { JSONContent } from "@carbon/tiptap";
 import {
   Command,
   EditorBubble,
@@ -17,7 +16,8 @@ import {
   handleImageDrop,
   handleImagePaste,
   renderItems,
-} from "novel";
+} from "@carbon/tiptap";
+import TextStyle from "@tiptap/extension-text-style";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Separator } from "../Separator";

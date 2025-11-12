@@ -7,6 +7,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  generateHTML,
   HStack,
   Tabs,
   TabsContent,
@@ -14,9 +15,8 @@ import {
   TabsTrigger,
   toast,
   useDebounce,
-  generateHTML,
 } from "@carbon/react";
-import { Editor } from "@carbon/react/Editor.client";
+import { Editor } from "@carbon/react/Editor";
 import { getLocalTimeZone, today } from "@internationalized/date";
 import { nanoid } from "nanoid";
 import { useState } from "react";

@@ -1,0 +1,72 @@
+{
+  "name": "@carbon/tiptap",
+  "dependencies": {
+    "@radix-ui/react-slot": "^1.1.1",
+    "@tiptap/core": "^2.11.2",
+    "@tiptap/extension-character-count": "^2.11.2",
+    "@tiptap/extension-code-block-lowlight": "^2.11.2",
+    "@tiptap/extension-color": "^2.11.2",
+    "@tiptap/extension-highlight": "^2.11.2",
+    "@tiptap/extension-horizontal-rule": "^2.11.2",
+    "@tiptap/extension-image": "^2.11.2",
+    "@tiptap/extension-link": "^2.11.2",
+    "@tiptap/extension-placeholder": "^2.11.2",
+    "@tiptap/extension-task-item": "^2.11.2",
+    "@tiptap/extension-task-list": "^2.11.2",
+    "@tiptap/extension-text-style": "^2.11.2",
+    "@tiptap/extension-underline": "^2.11.2",
+    "@tiptap/extension-youtube": "^2.11.2",
+    "@tiptap/pm": "^2.11.2",
+    "@tiptap/react": "^2.11.2",
+    "@tiptap/starter-kit": "^2.11.2",
+    "@tiptap/suggestion": "^2.11.2",
+    "@types/node": "^22.10.6",
+    "cmdk": "^1.0.4",
+    "jotai": "^2.11.0",
+    "react-markdown": "^9.0.3",
+    "react-moveable": "^0.56.0",
+    "tippy.js": "^6.3.7",
+    "tiptap-extension-global-drag-handle": "^0.1.16",
+    "tiptap-markdown": "^0.8.10",
+    "tunnel-rat": "^0.1.2"
+  },
+  "devDependencies": {
+    "@carbon/jest": "*",
+    "@carbon/tailwind": "*",
+    "@carbon/tsconfig": "*",
+    "@carbon/utils": "*",
+    "@testing-library/dom": "^8.11.1",
+    "@types/dompurify": "^2.4.0",
+    "@types/forge-viewer": "7.89.1",
+    "@types/jest": "^26.0.22",
+    "@types/react": "^18.2.74",
+    "@types/react-dom": "^18.2.24",
+    "@types/react-window": "^1.8.5",
+    "eslint": "^8.23.1",
+    "eslint-config-carbon": "*",
+    "jest": "^26.6.3",
+    "react": "^18.3.1",
+    "tsup": "^6.5.0",
+    "typescript": "^5.2.2"
+  },
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "jest": {
+    "preset": "@carbon/jest/node"
+  },
+  "peerDependencies": {
+    "@internationalized/date": "^3.5.2",
+    "framer-motion": "^11.1.7",
+    "react": "^18.3.1",
+    "react-icons": "^5.3.0"
+  },
+  "private": true,
+  "scripts": {
+    "clean": "rimraf .turbo node_modules",
+    "lint": "TIMING=1 eslint \"src/**/*.ts*\"",
+    "test": "jest"
+  },
+  "sideEffects": false,
+  "version": "*"
+}

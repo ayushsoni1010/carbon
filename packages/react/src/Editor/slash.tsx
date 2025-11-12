@@ -1,5 +1,5 @@
+import { createSuggestionItems } from "@carbon/tiptap";
 import type { EditorView } from "@tiptap/pm/view";
-import { createSuggestionItems } from "novel";
 import {
   LuHeading1,
   LuHeading2,

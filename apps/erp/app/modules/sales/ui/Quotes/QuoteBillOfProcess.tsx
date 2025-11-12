@@ -19,6 +19,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  generateHTML,
   HStack,
   IconButton,
   Label,
@@ -32,9 +33,8 @@ import {
   useDebounce,
   useDisclosure,
   VStack,
-  generateHTML,
 } from "@carbon/react";
-import { Editor } from "@carbon/react/Editor.client";
+import { Editor } from "@carbon/react/Editor";
 import { formatRelativeTime } from "@carbon/utils";
 import { getLocalTimeZone, today } from "@internationalized/date";
 import { useFetcher, useFetchers, useParams } from "@remix-run/react";

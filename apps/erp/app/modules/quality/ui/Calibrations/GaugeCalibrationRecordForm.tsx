@@ -41,7 +41,7 @@ import {
   useDisclosure,
   VStack,
 } from "@carbon/react";
-import { Editor } from "@carbon/react/Editor.client";
+import { Editor } from "@carbon/react/Editor";
 import { useFetcher, useLocation } from "@remix-run/react";
 import type { FileObject } from "@supabase/storage-js";
 import { nanoid } from "nanoid";

@@ -8,14 +8,14 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  generateHTML,
   Spinner,
   toast,
   useDebounce,
   VStack,
   type JSONContent,
-  generateHTML,
 } from "@carbon/react";
-import { Editor } from "@carbon/react/Editor.client";
+import { Editor } from "@carbon/react/Editor";
 import { Await, useLoaderData, useParams } from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@vercel/remix";
 import { json, redirect } from "@vercel/remix";

@@ -1,4 +1,4 @@
-import { EditorBubbleItem, useEditor } from "novel";
+import { EditorBubbleItem, useEditor } from "@carbon/tiptap";
 import {
   BsCodeSlash,
   BsTypeBold,

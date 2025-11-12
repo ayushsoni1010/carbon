@@ -42,7 +42,7 @@ import {
   useKeyboardShortcuts,
   VStack,
 } from "@carbon/react";
-import { Editor } from "@carbon/react/Editor.client";
+import { Editor } from "@carbon/react/Editor";
 import { prettifyKeyboardShortcut } from "@carbon/utils";
 import { useFetcher, useParams } from "@remix-run/react";
 import { Reorder } from "framer-motion";
