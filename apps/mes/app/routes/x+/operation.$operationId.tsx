@@ -13,6 +13,7 @@ import {
   getJobOperationById,
   getJobOperationProcedure,
   getKanbanByJobId,
+  getNonConformanceActions,
   getProductionEventsForJobOperation,
   getProductionQuantitiesForJobOperation,
   getThumbnailPathByItemId,
@@ -126,6 +127,11 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
         jobMakeMethod.data?.requiresSerialTracking ?? false,
     }),
     trackedEntities: trackedEntities.data ?? [],
+    nonConformanceActions: getNonConformanceActions(serviceRole, {
+      itemId: operation.data?.[0].itemId,
+      processId: operation.data?.[0].processId,
+      companyId,
+    }),
     operation: makeDurations(operation.data?.[0]) as OperationWithDetails,
     procedure: getJobOperationProcedure(serviceRole, operation.data?.[0].id),
     workCenter: getWorkCenter(serviceRole, operation.data?.[0].workCenterId),
@@ -149,6 +155,7 @@ export default function OperationRoute() {
     thumbnailPath,
     trackedEntities,
     workCenter,
+    nonConformanceActions,
   } = useLoaderData<typeof loader>();
 
   return (
@@ -160,6 +167,7 @@ export default function OperationRoute() {
       materials={materials}
       method={jobMakeMethod}
       trackedEntities={trackedEntities}
+      nonConformanceActions={nonConformanceActions}
       operation={operation}
       procedure={procedure}
       job={job}

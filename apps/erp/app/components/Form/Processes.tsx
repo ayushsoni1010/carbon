@@ -41,6 +41,7 @@ const Processes = (props: ProcessSelectProps) => {
             defaultStandardFactor: "Minutes/Piece",
             processType: "Inside",
             workCenters: [],
+            completeAllOnScan: false,
           }}
         />
       )}

@@ -3,6 +3,11 @@ import type { JSONContent } from "@carbon/react";
 import {
   Button,
   cn,
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
   DatePicker,
   DropdownMenu,
   DropdownMenuContent,
@@ -26,18 +31,20 @@ import { formatDate } from "@carbon/utils";
 import { parseDate } from "@internationalized/date";
 import { useFetchers, useParams, useSubmit } from "@remix-run/react";
 import { nanoid } from "nanoid";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   LuCalendar,
   LuChevronRight,
   LuCircleCheck,
   LuCirclePlay,
+  LuCog,
   LuLoaderCircle,
 } from "react-icons/lu";
+import { RxCheck } from "react-icons/rx";
 import { Assignee } from "~/components";
+import { useProcesses } from "~/components/Form/Process";
 import { IssueTaskStatusIcon } from "~/components/Icons";
 import { usePermissions, useRouteData, useUser } from "~/hooks";
-
 import type {
   Issue,
   IssueActionTask,
@@ -198,10 +205,16 @@ export function TaskItem({
             disabled={isDisabled}
           />
           {type === "action" && (
-            <TaskDueDate
-              task={task as IssueActionTask}
-              isDisabled={isDisabled}
-            />
+            <>
+              <TaskDueDate
+                task={task as IssueActionTask}
+                isDisabled={isDisabled}
+              />
+              <TaskProcesses
+                task={task as IssueActionTask}
+                isDisabled={isDisabled}
+              />
+            </>
           )}
         </HStack>
         <HStack>
@@ -497,6 +510,131 @@ function TaskDueDate({
             </Button>
           )}
         </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+function TaskProcesses({
+  task,
+  isDisabled,
+}: {
+  task: IssueActionTask;
+  isDisabled: boolean;
+}) {
+  const submit = useSubmit();
+  const [isOpen, setIsOpen] = useState(false);
+  const permissions = usePermissions();
+  const processOptions = useProcesses();
+
+  // Get current process IDs from the task (memoized to prevent unnecessary re-renders)
+  const currentProcessIds = useMemo(
+    () => task.nonConformanceActionProcess?.map((p) => p.processId) ?? [],
+    [task.nonConformanceActionProcess]
+  );
+
+  // Local state for immediate UI updates
+  const [localProcessIds, setLocalProcessIds] =
+    useState<string[]>(currentProcessIds);
+
+  // Sync local state when task data changes (after revalidation)
+  useEffect(() => {
+    setLocalProcessIds(currentProcessIds);
+  }, [currentProcessIds]);
+
+  const canEdit = permissions.can("update", "quality") && !isDisabled;
+  const fetchers = useFetchers();
+  const pendingUpdate = fetchers.find(
+    (f) =>
+      (f.json as { id?: string })?.id === task.id &&
+      f.key === `nonConformanceTaskProcesses:${task.id}`
+  );
+
+  const pendingProcessIds = (pendingUpdate?.json as { processIds?: string[] })
+    ?.processIds;
+
+  const activeProcessIds = pendingProcessIds ?? localProcessIds;
+
+  const handleProcessToggle = (processId: string) => {
+    const newProcessIds = activeProcessIds.includes(processId)
+      ? activeProcessIds.filter((id) => id !== processId)
+      : [...activeProcessIds, processId];
+
+    // Update local state immediately for instant UI feedback
+    setLocalProcessIds(newProcessIds);
+
+    submit(
+      {
+        id: task.id!,
+        processIds: newProcessIds,
+      },
+      {
+        method: "post",
+        action: path.to.issueActionProcesses(task.id!),
+        navigate: false,
+        fetcherKey: `nonConformanceTaskProcesses:${task.id}`,
+        encType: "application/json",
+      }
+    );
+  };
+
+  const selectedProcesses = processOptions.filter((p) =>
+    activeProcessIds.includes(p.value)
+  );
+
+  const buttonLabel =
+    selectedProcesses.length === 0
+      ? "Processes"
+      : selectedProcesses.length === 1
+      ? selectedProcesses[0].label
+      : `${selectedProcesses.length} Processes`;
+
+  if (!canEdit) {
+    return (
+      <Button variant="secondary" size="sm" leftIcon={<LuCog />} isDisabled>
+        <span>{buttonLabel}</span>
+      </Button>
+    );
+  }
+
+  return (
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger disabled={isDisabled} asChild>
+        <Button
+          variant="secondary"
+          size="sm"
+          leftIcon={<LuCog />}
+          isDisabled={isDisabled}
+        >
+          {buttonLabel}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[250px] p-0" align="start">
+        <Command>
+          <CommandInput placeholder="Search processes..." className="h-9" />
+          <CommandEmpty>No process found.</CommandEmpty>
+          <CommandGroup className="max-h-[300px] overflow-y-auto">
+            {processOptions.map((option) => (
+              <CommandItem
+                key={option.value}
+                value={option.label}
+                onSelect={() => handleProcessToggle(option.value)}
+              >
+                <div
+                  className={cn(
+                    "mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
+                    activeProcessIds.includes(option.value)
+                      ? "bg-primary text-primary-foreground"
+                      : "opacity-50 [&_svg]:invisible"
+                  )}
+                >
+                  <RxCheck className="h-4 w-4" />
+                </div>
+                <span>{option.label}</span>
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        </Command>
       </PopoverContent>
     </Popover>
   );

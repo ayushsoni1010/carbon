@@ -1,8 +1,9 @@
 import type { Database } from "@carbon/database";
+import type { JSONContent } from "@carbon/react";
 import type { TrackedActivityAttributes } from "@carbon/utils";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { nanoid } from "nanoid";
-import { z } from 'zod/v3';
+import type { z } from "zod/v3";
 import { sanitize } from "~/utils/supabase";
 import type {
   documentTypes,
@@ -372,6 +373,27 @@ export async function getLocationsByCompany(
     .select("*")
     .eq("companyId", companyId)
     .order("name", { ascending: true });
+}
+
+export async function getNonConformanceActions(
+  client: SupabaseClient<Database>,
+  args: {
+    itemId: string;
+    processId: string;
+    companyId: string;
+  }
+) {
+  const result = await client.rpc("get_action_tasks_by_item_and_process", {
+    p_item_id: args.itemId,
+    p_process_id: args.processId,
+    p_company_id: args.companyId,
+  });
+
+  return (result.data ?? []) as {
+    actionTypeName: string;
+    assignee: string;
+    notes: JSONContent;
+  }[];
 }
 
 export async function getProcessesList(

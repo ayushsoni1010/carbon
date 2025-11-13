@@ -8,6 +8,7 @@ import {
   DropdownMenuIcon,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  generateHTML,
   Heading,
   HStack,
   IconButton,
@@ -34,7 +35,6 @@ import {
   useDisclosure,
   VStack,
   type JSONContent,
-  generateHTML,
 } from "@carbon/react";
 import { Await, useFetcher, useNavigate, useParams } from "@remix-run/react";
 import { Suspense, useEffect, useMemo, useState } from "react";
@@ -134,6 +134,13 @@ type JobOperationProps = {
     trackedInputs: TrackedInput[];
   }>;
   method: JobMakeMethod | null;
+  nonConformanceActions: Promise<
+    {
+      actionTypeName: string;
+      assignee: string;
+      notes: JSONContent;
+    }[]
+  >;
   operation: OperationWithDetails;
   procedure: Promise<{
     attributes: JobOperationStep[];
@@ -152,6 +159,7 @@ export const JobOperation = ({
   kanban,
   materials,
   method,
+  nonConformanceActions,
   operation: originalOperation,
   procedure,
   thumbnailPath,
@@ -552,6 +560,35 @@ export const JobOperation = ({
                 </div>
               </div>
             </div>
+
+            <Suspense key={`non-conformance-actions-${operationId}`}>
+              <Await resolve={nonConformanceActions}>
+                {(resolvedNonConformanceActions) => {
+                  return resolvedNonConformanceActions.map((action) => {
+                    if (Object.keys(action.notes).length === 0) {
+                      return null;
+                    }
+
+                    return (
+                      <>
+                        <Separator />
+                        <div className="flex flex-col items-start justify-between w-full">
+                          <div className="flex flex-col gap-4 p-4 lg:p-6 w-full">
+                            <Heading size="h3">{action.actionTypeName}</Heading>
+                            <div
+                              className="prose dark:prose-invert prose-sm max-w-none"
+                              dangerouslySetInnerHTML={{
+                                __html: generateHTML(action.notes),
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </>
+                    );
+                  });
+                }}
+              </Await>
+            </Suspense>
 
             <Suspense key={`attributes-${operationId}`}>
               <Await resolve={procedure}>

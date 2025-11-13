@@ -7396,7 +7396,6 @@ export type Database = {
       gaugeCalibrationRecord: {
         Row: {
           approvedBy: string | null
-          calibrationAttempts: Json | null
           companyId: string | null
           createdAt: string
           createdBy: string
@@ -7406,7 +7405,6 @@ export type Database = {
           humidity: number | null
           id: string
           inspectionStatus: Database["public"]["Enums"]["inspectionStatus"]
-          measurementStandard: string | null
           notes: Json
           requiresAction: boolean
           requiresAdjustment: boolean
@@ -7418,7 +7416,6 @@ export type Database = {
         }
         Insert: {
           approvedBy?: string | null
-          calibrationAttempts?: Json | null
           companyId?: string | null
           createdAt?: string
           createdBy: string
@@ -7428,7 +7425,6 @@ export type Database = {
           humidity?: number | null
           id?: string
           inspectionStatus: Database["public"]["Enums"]["inspectionStatus"]
-          measurementStandard?: string | null
           notes?: Json
           requiresAction?: boolean
           requiresAdjustment?: boolean
@@ -7440,7 +7436,6 @@ export type Database = {
         }
         Update: {
           approvedBy?: string | null
-          calibrationAttempts?: Json | null
           companyId?: string | null
           createdAt?: string
           createdBy?: string
@@ -7450,7 +7445,6 @@ export type Database = {
           humidity?: number | null
           id?: string
           inspectionStatus?: Database["public"]["Enums"]["inspectionStatus"]
-          measurementStandard?: string | null
           notes?: Json
           requiresAction?: boolean
           requiresAdjustment?: boolean
@@ -14743,6 +14737,166 @@ export type Database = {
           },
         ]
       }
+      nonConformanceActionProcess: {
+        Row: {
+          actionTaskId: string
+          companyId: string
+          createdAt: string
+          createdBy: string
+          id: string
+          processId: string
+          updatedAt: string | null
+          updatedBy: string | null
+        }
+        Insert: {
+          actionTaskId: string
+          companyId: string
+          createdAt?: string
+          createdBy: string
+          id?: string
+          processId: string
+          updatedAt?: string | null
+          updatedBy?: string | null
+        }
+        Update: {
+          actionTaskId?: string
+          companyId?: string
+          createdAt?: string
+          createdBy?: string
+          id?: string
+          processId?: string
+          updatedAt?: string | null
+          updatedBy?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nonConformanceActionProcess_actionTaskId_fkey"
+            columns: ["actionTaskId"]
+            isOneToOne: false
+            referencedRelation: "nonConformanceActionTask"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nonConformanceActionProcess_actionTaskId_fkey"
+            columns: ["actionTaskId"]
+            isOneToOne: false
+            referencedRelation: "qualityActions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nonConformanceActionProcess_companyId_fkey"
+            columns: ["companyId"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nonConformanceActionProcess_companyId_fkey"
+            columns: ["companyId"]
+            isOneToOne: false
+            referencedRelation: "company"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nonConformanceActionProcess_companyId_fkey"
+            columns: ["companyId"]
+            isOneToOne: false
+            referencedRelation: "customFieldTables"
+            referencedColumns: ["companyId"]
+          },
+          {
+            foreignKeyName: "nonConformanceActionProcess_companyId_fkey"
+            columns: ["companyId"]
+            isOneToOne: false
+            referencedRelation: "integrations"
+            referencedColumns: ["companyId"]
+          },
+          {
+            foreignKeyName: "nonConformanceActionProcess_createdBy_fkey"
+            columns: ["createdBy"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nonConformanceActionProcess_createdBy_fkey"
+            columns: ["createdBy"]
+            isOneToOne: false
+            referencedRelation: "employeesAcrossCompanies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nonConformanceActionProcess_createdBy_fkey"
+            columns: ["createdBy"]
+            isOneToOne: false
+            referencedRelation: "employeeSummary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nonConformanceActionProcess_createdBy_fkey"
+            columns: ["createdBy"]
+            isOneToOne: false
+            referencedRelation: "user"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nonConformanceActionProcess_createdBy_fkey"
+            columns: ["createdBy"]
+            isOneToOne: false
+            referencedRelation: "userDefaults"
+            referencedColumns: ["userId"]
+          },
+          {
+            foreignKeyName: "nonConformanceActionProcess_processId_fkey"
+            columns: ["processId"]
+            isOneToOne: false
+            referencedRelation: "process"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nonConformanceActionProcess_processId_fkey"
+            columns: ["processId"]
+            isOneToOne: false
+            referencedRelation: "processes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nonConformanceActionProcess_updatedBy_fkey"
+            columns: ["updatedBy"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nonConformanceActionProcess_updatedBy_fkey"
+            columns: ["updatedBy"]
+            isOneToOne: false
+            referencedRelation: "employeesAcrossCompanies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nonConformanceActionProcess_updatedBy_fkey"
+            columns: ["updatedBy"]
+            isOneToOne: false
+            referencedRelation: "employeeSummary"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nonConformanceActionProcess_updatedBy_fkey"
+            columns: ["updatedBy"]
+            isOneToOne: false
+            referencedRelation: "user"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nonConformanceActionProcess_updatedBy_fkey"
+            columns: ["updatedBy"]
+            isOneToOne: false
+            referencedRelation: "userDefaults"
+            referencedColumns: ["userId"]
+          },
+        ]
+      }
       nonConformanceActionTask: {
         Row: {
           actionTypeId: string | null
@@ -16418,6 +16572,7 @@ export type Database = {
           createdBy: string
           id: string
           name: string
+          processIds: string[] | null
           updatedAt: string | null
           updatedBy: string | null
         }
@@ -16428,6 +16583,7 @@ export type Database = {
           createdBy: string
           id?: string
           name: string
+          processIds?: string[] | null
           updatedAt?: string | null
           updatedBy?: string | null
         }
@@ -16438,6 +16594,7 @@ export type Database = {
           createdBy?: string
           id?: string
           name?: string
+          processIds?: string[] | null
           updatedAt?: string | null
           updatedBy?: string | null
         }
@@ -38660,7 +38817,6 @@ export type Database = {
       gaugeCalibrationRecords: {
         Row: {
           approvedBy: string | null
-          calibrationAttempts: Json | null
           companyId: string | null
           createdAt: string | null
           createdBy: string | null
@@ -38675,7 +38831,6 @@ export type Database = {
           inspectionStatus:
             | Database["public"]["Enums"]["inspectionStatus"]
             | null
-          measurementStandard: string | null
           notes: Json | null
           requiresAction: boolean | null
           requiresAdjustment: boolean | null
@@ -41920,14 +42075,14 @@ export type Database = {
           },
           {
             foreignKeyName: "partner_id_fkey"
-            columns: ["id"]
+            columns: ["supplierLocationId"]
             isOneToOne: false
             referencedRelation: "supplierLocation"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "partner_id_fkey"
-            columns: ["supplierLocationId"]
+            columns: ["id"]
             isOneToOne: false
             referencedRelation: "supplierLocation"
             referencedColumns: ["id"]
@@ -43291,14 +43446,14 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "address_countryCode_fkey"
-            columns: ["supplierCountryCode"]
+            columns: ["customerCountryCode"]
             isOneToOne: false
             referencedRelation: "country"
             referencedColumns: ["alpha2"]
           },
           {
             foreignKeyName: "address_countryCode_fkey"
-            columns: ["customerCountryCode"]
+            columns: ["supplierCountryCode"]
             isOneToOne: false
             referencedRelation: "country"
             referencedColumns: ["alpha2"]
@@ -45810,14 +45965,14 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "address_countryCode_fkey"
-            columns: ["customerCountryCode"]
+            columns: ["invoiceCountryCode"]
             isOneToOne: false
             referencedRelation: "country"
             referencedColumns: ["alpha2"]
           },
           {
             foreignKeyName: "address_countryCode_fkey"
-            columns: ["invoiceCountryCode"]
+            columns: ["customerCountryCode"]
             isOneToOne: false
             referencedRelation: "country"
             referencedColumns: ["alpha2"]
@@ -48871,6 +49026,14 @@ export type Database = {
           rfq_id: string
           rfq_line_ids: string[]
           rfq_readable_id: string
+        }[]
+      }
+      get_action_tasks_by_item_and_process: {
+        Args: { p_company_id: string; p_item_id: string; p_process_id: string }
+        Returns: {
+          actionTypeName: string
+          assignee: string
+          notes: Json
         }[]
       }
       get_active_job_count: {
