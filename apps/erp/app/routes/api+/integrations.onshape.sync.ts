@@ -4,10 +4,6 @@ import { onShapeDataValidator } from "@carbon/ee/onshape";
 import { FunctionRegion } from "@supabase/supabase-js";
 import { json, type ActionFunctionArgs } from "@vercel/remix";
 
-export const config = {
-  maxDuration: 300,
-};
-
 export async function action({ request }: ActionFunctionArgs) {
   const { client, companyId, userId } = await requirePermissions(request, {
     update: "parts",
