@@ -17,7 +17,6 @@ import {
   LuCircleCheck,
   LuCirclePlay,
   LuExternalLink,
-  LuEye,
   LuFile,
   LuLoaderCircle,
 } from "react-icons/lu";
@@ -60,11 +59,11 @@ const IssueHeader = () => {
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
-              leftIcon={<LuEye />}
+              leftIcon={<LuFile />}
               variant="secondary"
               rightIcon={<LuChevronDown />}
             >
-              Preview
+              Reports
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent>
