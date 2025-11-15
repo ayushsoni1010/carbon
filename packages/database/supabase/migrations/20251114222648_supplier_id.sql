@@ -1,7 +1,15 @@
-CREATE TYPE disposition AS ENUM (
-  'Use as is',
+CREATE TYPE "disposition" AS ENUM (
+  'Conditional Acceptance',
+  'Deviation Accepted',
+  'Hold',
+  'No Action Required',
+  'Pending',
+  'Quarantine',
+  'Repair',
+  'Return to Supplier',
   'Rework',
-  'Scrap'
+  'Scrap',
+  'Use As Is'
 );
 
 ALTER TABLE public."nonConformanceActionTask"
@@ -29,4 +37,25 @@ CREATE INDEX IF NOT EXISTS "nonConformanceInvestigationTask_supplierId_idx"
 ON public."nonConformanceInvestigationTask" ("supplierId");
 
 ALTER TABLE public."nonConformanceItem"
-ADD COLUMN disposition disposition NULL;
+ADD COLUMN "disposition" "disposition" DEFAULT 'Pending';
+
+ALTER TYPE "externalLinkDocumentType" ADD VALUE IF NOT EXISTS 'Non-Conformance';
+
+-- Create trigger function to auto-create external link for non-conformance suppliers
+CREATE OR REPLACE FUNCTION create_non_conformance_external_link()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- Insert into externalLink table
+  INSERT INTO "externalLink" ("documentType", "documentId", "companyId")
+  VALUES ('Non-Conformance', NEW."nonConformanceId", NEW."companyId")
+  ON CONFLICT ("documentId", "documentType", "companyId") DO NOTHING;
+  
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Create trigger on nonConformanceSupplier table
+CREATE TRIGGER create_non_conformance_external_link_trigger
+AFTER INSERT ON "nonConformanceSupplier"
+FOR EACH ROW
+EXECUTE FUNCTION create_non_conformance_external_link();

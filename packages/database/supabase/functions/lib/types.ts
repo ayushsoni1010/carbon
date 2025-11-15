@@ -14917,6 +14917,7 @@ export type Database = {
           notes: Json
           sortOrder: number
           status: Database["public"]["Enums"]["nonConformanceTaskStatus"]
+          supplierId: string | null
           tags: string[] | null
           updatedAt: string | null
           updatedBy: string | null
@@ -14934,6 +14935,7 @@ export type Database = {
           notes?: Json
           sortOrder?: number
           status?: Database["public"]["Enums"]["nonConformanceTaskStatus"]
+          supplierId?: string | null
           tags?: string[] | null
           updatedAt?: string | null
           updatedBy?: string | null
@@ -14951,6 +14953,7 @@ export type Database = {
           notes?: Json
           sortOrder?: number
           status?: Database["public"]["Enums"]["nonConformanceTaskStatus"]
+          supplierId?: string | null
           tags?: string[] | null
           updatedAt?: string | null
           updatedBy?: string | null
@@ -15073,6 +15076,41 @@ export type Database = {
             columns: ["nonConformanceId"]
             isOneToOne: false
             referencedRelation: "nonConformance"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nonConformanceActionTask_supplierId_fkey"
+            columns: ["supplierId"]
+            isOneToOne: false
+            referencedRelation: "contractors"
+            referencedColumns: ["supplierId"]
+          },
+          {
+            foreignKeyName: "nonConformanceActionTask_supplierId_fkey"
+            columns: ["supplierId"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["supplierId"]
+          },
+          {
+            foreignKeyName: "nonConformanceActionTask_supplierId_fkey"
+            columns: ["supplierId"]
+            isOneToOne: false
+            referencedRelation: "purchaseOrderSuppliers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nonConformanceActionTask_supplierId_fkey"
+            columns: ["supplierId"]
+            isOneToOne: false
+            referencedRelation: "supplier"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nonConformanceActionTask_supplierId_fkey"
+            columns: ["supplierId"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
             referencedColumns: ["id"]
           },
           {
@@ -15501,6 +15539,7 @@ export type Database = {
           notes: Json
           sortOrder: number
           status: Database["public"]["Enums"]["nonConformanceTaskStatus"]
+          supplierId: string | null
           tags: string[] | null
           updatedAt: string | null
           updatedBy: string | null
@@ -15518,6 +15557,7 @@ export type Database = {
           notes?: Json
           sortOrder?: number
           status?: Database["public"]["Enums"]["nonConformanceTaskStatus"]
+          supplierId?: string | null
           tags?: string[] | null
           updatedAt?: string | null
           updatedBy?: string | null
@@ -15535,6 +15575,7 @@ export type Database = {
           notes?: Json
           sortOrder?: number
           status?: Database["public"]["Enums"]["nonConformanceTaskStatus"]
+          supplierId?: string | null
           tags?: string[] | null
           updatedAt?: string | null
           updatedBy?: string | null
@@ -15657,6 +15698,41 @@ export type Database = {
             columns: ["nonConformanceId"]
             isOneToOne: false
             referencedRelation: "nonConformance"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nonConformanceInvestigationTask_supplierId_fkey"
+            columns: ["supplierId"]
+            isOneToOne: false
+            referencedRelation: "contractors"
+            referencedColumns: ["supplierId"]
+          },
+          {
+            foreignKeyName: "nonConformanceInvestigationTask_supplierId_fkey"
+            columns: ["supplierId"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["supplierId"]
+          },
+          {
+            foreignKeyName: "nonConformanceInvestigationTask_supplierId_fkey"
+            columns: ["supplierId"]
+            isOneToOne: false
+            referencedRelation: "purchaseOrderSuppliers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nonConformanceInvestigationTask_supplierId_fkey"
+            columns: ["supplierId"]
+            isOneToOne: false
+            referencedRelation: "supplier"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nonConformanceInvestigationTask_supplierId_fkey"
+            columns: ["supplierId"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
             referencedColumns: ["id"]
           },
           {
@@ -15833,6 +15909,7 @@ export type Database = {
           companyId: string
           createdAt: string
           createdBy: string
+          disposition: Database["public"]["Enums"]["disposition"] | null
           id: string
           itemId: string
           nonConformanceId: string
@@ -15843,6 +15920,7 @@ export type Database = {
           companyId: string
           createdAt?: string
           createdBy: string
+          disposition?: Database["public"]["Enums"]["disposition"] | null
           id?: string
           itemId: string
           nonConformanceId: string
@@ -15853,6 +15931,7 @@ export type Database = {
           companyId?: string
           createdAt?: string
           createdBy?: string
+          disposition?: Database["public"]["Enums"]["disposition"] | null
           id?: string
           itemId?: string
           nonConformanceId?: string
@@ -50253,6 +50332,18 @@ export type Database = {
         | "Total"
       deadlineType: "No Deadline" | "ASAP" | "Soft Deadline" | "Hard Deadline"
       demandSourceType: "Sales Order" | "Job Material"
+      disposition:
+        | "Conditional Acceptance"
+        | "Deviation Accepted"
+        | "Hold"
+        | "No Action Required"
+        | "Pending"
+        | "Quarantine"
+        | "Repair"
+        | "Return to Supplier"
+        | "Rework"
+        | "Scrap"
+        | "Use As Is"
       documentSourceType:
         | "Job"
         | "Part"
@@ -50301,7 +50392,11 @@ export type Database = {
         | "Audio"
         | "Other"
         | "Model"
-      externalLinkDocumentType: "Quote" | "SupplierQuote" | "Customer"
+      externalLinkDocumentType:
+        | "Quote"
+        | "SupplierQuote"
+        | "Customer"
+        | "Non-Conformance"
       factor:
         | "Hours/Piece"
         | "Hours/100 Pieces"
@@ -51326,6 +51421,19 @@ export const Constants = {
       ],
       deadlineType: ["No Deadline", "ASAP", "Soft Deadline", "Hard Deadline"],
       demandSourceType: ["Sales Order", "Job Material"],
+      disposition: [
+        "Conditional Acceptance",
+        "Deviation Accepted",
+        "Hold",
+        "No Action Required",
+        "Pending",
+        "Quarantine",
+        "Repair",
+        "Return to Supplier",
+        "Rework",
+        "Scrap",
+        "Use As Is",
+      ],
       documentSourceType: [
         "Job",
         "Part",
@@ -51378,7 +51486,12 @@ export const Constants = {
         "Other",
         "Model",
       ],
-      externalLinkDocumentType: ["Quote", "SupplierQuote", "Customer"],
+      externalLinkDocumentType: [
+        "Quote",
+        "SupplierQuote",
+        "Customer",
+        "Non-Conformance",
+      ],
       factor: [
         "Hours/Piece",
         "Hours/100 Pieces",

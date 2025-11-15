@@ -6091,6 +6091,9 @@ export default {
             $ref: "#/parameters/rowFilter.nonConformanceActionTask.actionTypeId",
           },
           {
+            $ref: "#/parameters/rowFilter.nonConformanceActionTask.supplierId",
+          },
+          {
             $ref: "#/parameters/select",
           },
           {
@@ -6195,6 +6198,9 @@ export default {
             $ref: "#/parameters/rowFilter.nonConformanceActionTask.actionTypeId",
           },
           {
+            $ref: "#/parameters/rowFilter.nonConformanceActionTask.supplierId",
+          },
+          {
             $ref: "#/parameters/preferReturn",
           },
         ],
@@ -6251,6 +6257,9 @@ export default {
           },
           {
             $ref: "#/parameters/rowFilter.nonConformanceActionTask.actionTypeId",
+          },
+          {
+            $ref: "#/parameters/rowFilter.nonConformanceActionTask.supplierId",
           },
           {
             $ref: "#/parameters/body.nonConformanceActionTask",
@@ -33355,6 +33364,9 @@ export default {
             $ref: "#/parameters/rowFilter.nonConformanceItem.updatedBy",
           },
           {
+            $ref: "#/parameters/rowFilter.nonConformanceItem.disposition",
+          },
+          {
             $ref: "#/parameters/select",
           },
           {
@@ -33438,6 +33450,9 @@ export default {
             $ref: "#/parameters/rowFilter.nonConformanceItem.updatedBy",
           },
           {
+            $ref: "#/parameters/rowFilter.nonConformanceItem.disposition",
+          },
+          {
             $ref: "#/parameters/preferReturn",
           },
         ],
@@ -33473,6 +33488,9 @@ export default {
           },
           {
             $ref: "#/parameters/rowFilter.nonConformanceItem.updatedBy",
+          },
+          {
+            $ref: "#/parameters/rowFilter.nonConformanceItem.disposition",
           },
           {
             $ref: "#/parameters/body.nonConformanceItem",
@@ -42244,6 +42262,9 @@ export default {
             $ref: "#/parameters/rowFilter.nonConformanceInvestigationTask.investigationTypeId",
           },
           {
+            $ref: "#/parameters/rowFilter.nonConformanceInvestigationTask.supplierId",
+          },
+          {
             $ref: "#/parameters/select",
           },
           {
@@ -42348,6 +42369,9 @@ export default {
             $ref: "#/parameters/rowFilter.nonConformanceInvestigationTask.investigationTypeId",
           },
           {
+            $ref: "#/parameters/rowFilter.nonConformanceInvestigationTask.supplierId",
+          },
+          {
             $ref: "#/parameters/preferReturn",
           },
         ],
@@ -42404,6 +42428,9 @@ export default {
           },
           {
             $ref: "#/parameters/rowFilter.nonConformanceInvestigationTask.investigationTypeId",
+          },
+          {
+            $ref: "#/parameters/rowFilter.nonConformanceInvestigationTask.supplierId",
           },
           {
             $ref: "#/parameters/body.nonConformanceInvestigationTask",
@@ -63092,6 +63119,12 @@ export default {
           format: "text",
           type: "string",
         },
+        supplierId: {
+          description:
+            "Note:\nThis is a Foreign Key to `supplier.id`.<fk table='supplier' column='id'/>",
+          format: "text",
+          type: "string",
+        },
       },
       type: "object",
     },
@@ -76056,6 +76089,24 @@ export default {
           format: "text",
           type: "string",
         },
+        disposition: {
+          default: "Pending",
+          enum: [
+            "Conditional Acceptance",
+            "Deviation Accepted",
+            "Hold",
+            "No Action Required",
+            "Pending",
+            "Quarantine",
+            "Repair",
+            "Return to Supplier",
+            "Rework",
+            "Scrap",
+            "Use As Is",
+          ],
+          format: "public.disposition",
+          type: "string",
+        },
       },
       type: "object",
     },
@@ -80301,6 +80352,12 @@ export default {
           format: "text",
           type: "string",
         },
+        supplierId: {
+          description:
+            "Note:\nThis is a Foreign Key to `supplier.id`.<fk table='supplier' column='id'/>",
+          format: "text",
+          type: "string",
+        },
       },
       type: "object",
     },
@@ -81422,7 +81479,7 @@ export default {
           type: "string",
         },
         documentType: {
-          enum: ["Quote", "SupplierQuote", "Customer"],
+          enum: ["Quote", "SupplierQuote", "Customer", "Non-Conformance"],
           format: 'public."externalLinkDocumentType"',
           type: "string",
         },
@@ -90316,6 +90373,12 @@ export default {
     },
     "rowFilter.nonConformanceActionTask.actionTypeId": {
       name: "actionTypeId",
+      required: false,
+      in: "query",
+      type: "string",
+    },
+    "rowFilter.nonConformanceActionTask.supplierId": {
+      name: "supplierId",
       required: false,
       in: "query",
       type: "string",
@@ -104948,6 +105011,12 @@ export default {
       in: "query",
       type: "string",
     },
+    "rowFilter.nonConformanceItem.disposition": {
+      name: "disposition",
+      required: false,
+      in: "query",
+      type: "string",
+    },
     "body.configurationRule": {
       name: "configurationRule",
       description: "configurationRule",
@@ -109762,6 +109831,12 @@ export default {
     },
     "rowFilter.nonConformanceInvestigationTask.investigationTypeId": {
       name: "investigationTypeId",
+      required: false,
+      in: "query",
+      type: "string",
+    },
+    "rowFilter.nonConformanceInvestigationTask.supplierId": {
+      name: "supplierId",
       required: false,
       in: "query",
       type: "string",
