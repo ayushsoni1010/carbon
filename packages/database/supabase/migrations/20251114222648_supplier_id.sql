@@ -41,7 +41,7 @@ ON public."nonConformanceInvestigationTask" ("supplierId");
 ALTER TABLE public."nonConformanceItem"
 ADD COLUMN "disposition" "disposition" DEFAULT 'Pending';
 
-ALTER TYPE "externalLinkDocumentType" ADD VALUE IF NOT EXISTS 'Non-Conformance';
+ALTER TYPE "externalLinkDocumentType" ADD VALUE IF NOT EXISTS 'Non-Conformance Supplier';
 
 -- Create trigger function to auto-create external link for non-conformance suppliers
 CREATE OR REPLACE FUNCTION create_non_conformance_external_link()
@@ -51,7 +51,7 @@ DECLARE
 BEGIN
   -- Insert into externalLink table and get the ID
   INSERT INTO "externalLink" ("documentType", "documentId", "companyId")
-  VALUES ('Non-Conformance-Supplier', NEW."id", NEW."companyId")
+  VALUES ('Non-Conformance Supplier', NEW."id", NEW."companyId")
   ON CONFLICT ("documentId", "documentType", "companyId") DO UPDATE SET
     "documentType" = EXCLUDED."documentType"
   RETURNING "id" INTO external_link_id;
@@ -70,3 +70,31 @@ CREATE TRIGGER create_non_conformance_external_link_trigger
 AFTER INSERT ON "nonConformanceSupplier"
 FOR EACH ROW
 EXECUTE FUNCTION create_non_conformance_external_link();
+
+COMMIT;
+
+-- Backfill existing nonConformanceSupplier records with external links
+DO $$
+DECLARE
+  supplier_record RECORD;
+  external_link_id UUID;
+BEGIN
+  -- Loop through all existing nonConformanceSupplier records that don't have an externalLinkId
+  FOR supplier_record IN 
+    SELECT "id", "companyId" 
+    FROM "nonConformanceSupplier" 
+    WHERE "externalLinkId" IS NULL
+  LOOP
+    -- Insert into externalLink table and get the ID
+    INSERT INTO "externalLink" ("documentType", "documentId", "companyId")
+    VALUES ('Non-Conformance Supplier', supplier_record."id", supplier_record."companyId")
+    ON CONFLICT ("documentId", "documentType", "companyId") DO UPDATE SET
+      "documentType" = EXCLUDED."documentType"
+    RETURNING "id" INTO external_link_id;
+
+    -- Update the nonConformanceSupplier row with the external link ID
+    UPDATE "nonConformanceSupplier"
+    SET "externalLinkId" = external_link_id
+    WHERE "id" = supplier_record."id";
+  END LOOP;
+END $$;
