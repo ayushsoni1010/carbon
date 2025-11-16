@@ -51,7 +51,7 @@ DECLARE
 BEGIN
   -- Insert into externalLink table and get the ID
   INSERT INTO "externalLink" ("documentType", "documentId", "companyId")
-  VALUES ('Non-Conformance', NEW."id", NEW."companyId")
+  VALUES ('Non-Conformance-Supplier', NEW."id", NEW."companyId")
   ON CONFLICT ("documentId", "documentType", "companyId") DO UPDATE SET
     "documentType" = EXCLUDED."documentType"
   RETURNING "id" INTO external_link_id;
