@@ -1733,6 +1733,24 @@ function PreviewStepRecord({
           </a>
         </div>
       )}
+      {attribute.type === "Inspection" && (
+        <div className="flex justify-end gap-2 items-center text-sm">
+          {record.value && (
+            <>
+              <LuPaperclip className="size-4 text-muted-foreground" />
+              <a
+                href={getPrivateUrl(record.value)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs"
+              >
+                View File
+              </a>
+            </>
+          )}
+          <Checkbox checked={record.booleanValue ?? false} />
+        </div>
+      )}
     </>
   );
 }

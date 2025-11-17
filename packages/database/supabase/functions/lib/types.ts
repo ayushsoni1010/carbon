@@ -11261,6 +11261,8 @@ export type Database = {
           maxValue: number | null
           minValue: number | null
           name: string
+          nonConformanceActionId: string | null
+          nonConformanceInvestigationId: string | null
           operationId: string
           required: boolean | null
           sortOrder: number
@@ -11280,6 +11282,8 @@ export type Database = {
           maxValue?: number | null
           minValue?: number | null
           name: string
+          nonConformanceActionId?: string | null
+          nonConformanceInvestigationId?: string | null
           operationId: string
           required?: boolean | null
           sortOrder?: number
@@ -11299,6 +11303,8 @@ export type Database = {
           maxValue?: number | null
           minValue?: number | null
           name?: string
+          nonConformanceActionId?: string | null
+          nonConformanceInvestigationId?: string | null
           operationId?: string
           required?: boolean | null
           sortOrder?: number
@@ -11398,6 +11404,27 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "userDefaults"
             referencedColumns: ["userId"]
+          },
+          {
+            foreignKeyName: "jobOperationStep_nonConformanceActionId_fkey"
+            columns: ["nonConformanceActionId"]
+            isOneToOne: false
+            referencedRelation: "nonConformanceActionTask"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "jobOperationStep_nonConformanceActionId_fkey"
+            columns: ["nonConformanceActionId"]
+            isOneToOne: false
+            referencedRelation: "qualityActions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "jobOperationStep_nonConformanceInvestigationId_fkey"
+            columns: ["nonConformanceInvestigationId"]
+            isOneToOne: false
+            referencedRelation: "nonConformanceInvestigationTask"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -42169,14 +42196,14 @@ export type Database = {
           },
           {
             foreignKeyName: "partner_id_fkey"
-            columns: ["id"]
+            columns: ["supplierLocationId"]
             isOneToOne: false
             referencedRelation: "supplierLocation"
             referencedColumns: ["id"]
           },
           {
             foreignKeyName: "partner_id_fkey"
-            columns: ["supplierLocationId"]
+            columns: ["id"]
             isOneToOne: false
             referencedRelation: "supplierLocation"
             referencedColumns: ["id"]
@@ -46059,14 +46086,14 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "address_countryCode_fkey"
-            columns: ["invoiceCountryCode"]
+            columns: ["customerCountryCode"]
             isOneToOne: false
             referencedRelation: "country"
             referencedColumns: ["alpha2"]
           },
           {
             foreignKeyName: "address_countryCode_fkey"
-            columns: ["customerCountryCode"]
+            columns: ["invoiceCountryCode"]
             isOneToOne: false
             referencedRelation: "country"
             referencedColumns: ["alpha2"]
@@ -46602,14 +46629,14 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "address_countryCode_fkey"
-            columns: ["customerCountryCode"]
+            columns: ["paymentCountryCode"]
             isOneToOne: false
             referencedRelation: "country"
             referencedColumns: ["alpha2"]
           },
           {
             foreignKeyName: "address_countryCode_fkey"
-            columns: ["paymentCountryCode"]
+            columns: ["customerCountryCode"]
             isOneToOne: false
             referencedRelation: "country"
             referencedColumns: ["alpha2"]
@@ -49127,6 +49154,7 @@ export type Database = {
         Returns: {
           actionTypeName: string
           assignee: string
+          id: string
           notes: Json
         }[]
       }
@@ -50406,7 +50434,7 @@ export type Database = {
         | "Quote"
         | "SupplierQuote"
         | "Customer"
-        | "Non-Conformance"
+        | "Non-Conformance Supplier"
       factor:
         | "Hours/Piece"
         | "Hours/100 Pieces"
@@ -50604,6 +50632,7 @@ export type Database = {
         | "List"
         | "File"
         | "Task"
+        | "Inspection"
       processType: "Inside" | "Outside" | "Inside and Outside"
       productionEventType: "Setup" | "Labor" | "Machine"
       productionQuantityType: "Rework" | "Scrap" | "Production"
@@ -51500,7 +51529,7 @@ export const Constants = {
         "Quote",
         "SupplierQuote",
         "Customer",
-        "Non-Conformance",
+        "Non-Conformance Supplier",
       ],
       factor: [
         "Hours/Piece",
@@ -51716,6 +51745,7 @@ export const Constants = {
         "List",
         "File",
         "Task",
+        "Inspection",
       ],
       processType: ["Inside", "Outside", "Inside and Outside"],
       productionEventType: ["Setup", "Labor", "Machine"],

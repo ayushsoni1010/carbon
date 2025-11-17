@@ -44,7 +44,7 @@ import {
   FilePreview,
   OperationStatusIcon,
 } from "~/components";
-import { useUrlParams } from "~/hooks";
+import { useUrlParams, useUser } from "~/hooks";
 import type { productionEventType } from "~/services/models";
 import type {
   Job,
@@ -62,6 +62,8 @@ import type {
 import { path } from "~/utils/path";
 
 import type { Result } from "@carbon/auth";
+import { useCarbon } from "@carbon/auth";
+import type { Database } from "@carbon/database";
 import { useKeyboardWedge, useMode } from "@carbon/remix";
 import type { TrackedEntityAttributes } from "@carbon/utils";
 import {
@@ -136,6 +138,7 @@ type JobOperationProps = {
   method: JobMakeMethod | null;
   nonConformanceActions: Promise<
     {
+      id: string;
       actionTypeName: string;
       assignee: string;
       notes: JSONContent;
@@ -178,6 +181,11 @@ export const JobOperation = ({
     trackedEntities.findIndex((entity) => entity.id === trackedEntityId) ?? 0;
 
   const navigate = useNavigate();
+  const { carbon } = useCarbon();
+  const {
+    id: userId,
+    company: { id: companyId },
+  } = useUser();
 
   const [items] = useItems();
   const { downloadFile, downloadModel, getFilePath } = useFiles(job);
@@ -251,6 +259,79 @@ export const JobOperation = ({
           modelSize: operation.itemModelSize ?? job.modelSize,
         }
       : null;
+
+  const fetcher = useFetcher<Result>();
+
+  // Lazy creation of Inspection steps for non-conformance actions
+  useEffect(() => {
+    async function createInspectionStepsForNonConformanceActions() {
+      if (!carbon || !operationId) return;
+
+      try {
+        const activeActions = await nonConformanceActions;
+        const resolvedProcedure = await procedure;
+
+        if (activeActions.length === 0) return;
+
+        // Check which actions already have corresponding inspection steps
+        const existingSteps = resolvedProcedure.attributes.filter(
+          (step: any) =>
+            step.type === "Inspection" && step.nonConformanceActionId != null
+        );
+
+        const existingActionIds = new Set(
+          existingSteps.map((step: any) => step.nonConformanceActionId)
+        );
+
+        // Create inspection steps for actions that don't have them
+        const newSteps: Database["public"]["Tables"]["jobOperationStep"]["Insert"][] =
+          [];
+        let maxSortOrder = Math.max(
+          ...resolvedProcedure.attributes.map((s) => s.sortOrder ?? 0),
+          0
+        );
+
+        for (const action of activeActions) {
+          // Assuming the action object has an id field
+          const actionId = action.id;
+          if (!actionId || existingActionIds.has(actionId)) continue;
+
+          newSteps.push({
+            companyId,
+            createdBy: userId,
+            operationId,
+            name: action.actionTypeName,
+            type: "Inspection" as const,
+            sortOrder: ++maxSortOrder,
+            nonConformanceActionId: actionId,
+          });
+        }
+
+        if (newSteps.length > 0) {
+          fetcher.submit(JSON.stringify(newSteps), {
+            method: "post",
+            action: path.to.inspectionSteps,
+            encType: "application/json",
+          });
+        }
+      } catch (error) {
+        console.error(
+          "Failed to create inspection steps for non-conformance actions:",
+          error
+        );
+      }
+    }
+
+    createInspectionStepsForNonConformanceActions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    carbon,
+    operationId,
+    nonConformanceActions,
+    procedure,
+    companyId,
+    userId,
+  ]);
 
   const [selectedStep, setSelectedStep] = useState<JobOperationStep | null>(
     null

@@ -274,6 +274,14 @@ export function PreviewStepRecord({
           <LuPaperclip className="size-4 text-muted-foreground" />
         </div>
       )}
+      {step.type === "Inspection" && (
+        <div className="flex justify-end gap-2 items-center text-sm">
+          {record?.value && (
+            <LuPaperclip className="size-4 text-muted-foreground" />
+          )}
+          <Checkbox checked={record?.booleanValue ?? false} />
+        </div>
+      )}
     </div>
   );
 }
@@ -384,6 +392,15 @@ export function RecordModal({
             {attribute.type === "File" && (
               <Hidden name="value" value={filePath ?? ""} />
             )}
+            {attribute.type === "Inspection" && (
+              <>
+                <Hidden name="value" value={filePath ?? ""} />
+                <Hidden
+                  name="booleanValue"
+                  value={booleanControlled ? "true" : "false"}
+                />
+              </>
+            )}
             <VStack spacing={4}>
               {attribute.description && (
                 <div
@@ -440,6 +457,41 @@ export function RecordModal({
                 ) : (
                   <FileDropzone onDrop={onDrop} />
                 ))}
+              {attribute.type === "Inspection" && (
+                <>
+                  {file ? (
+                    <div className="flex flex-col gap-2 items-center justify-center py-6 w-full">
+                      <LuFile className="size-10 text-muted-foreground" />
+                      <p className="text-sm text-muted-foreground">
+                        {file.name}
+                      </p>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => {
+                          setFile(null);
+                          setFilePath(null);
+                        }}
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                  ) : (
+                    <FileDropzone onDrop={onDrop} />
+                  )}
+                  <div className="flex items-center justify-between py-4 w-full">
+                    <span className="text-sm font-medium">
+                      Passed Inspection
+                    </span>
+                    <Switch
+                      checked={booleanControlled}
+                      onCheckedChange={(checked) =>
+                        setBooleanControlled(!!checked)
+                      }
+                    />
+                  </div>
+                </>
+              )}
             </VStack>
           </ModalBody>
           <ModalFooter>

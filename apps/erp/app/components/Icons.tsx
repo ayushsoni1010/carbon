@@ -13,6 +13,7 @@ import {
   LuClock,
   LuClock3,
   LuExternalLink,
+  LuEye,
   LuFlaskConical,
   LuGroup,
   LuHammer,
@@ -255,6 +256,8 @@ export const ProcedureStepTypeIcon = ({
       return <LuList className={cn("text-orange-600", className)} />;
     case "File":
       return <LuImage className={cn("text-indigo-500", className)} />;
+    case "Inspection":
+      return <LuEye className={cn("text-indigo-500", className)} />;
   }
 };
 

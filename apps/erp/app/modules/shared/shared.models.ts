@@ -1,5 +1,5 @@
-import { z } from 'zod/v3';
 import { zfd } from "zod-form-data";
+import { z } from "zod/v3";
 
 export const chartIntervals = [
   { key: "week", label: "Week" },
@@ -81,6 +81,7 @@ export const procedureStepType = [
   "Person",
   "List",
   "File",
+  "Inspection",
 ] as const;
 
 export const processTypes = [

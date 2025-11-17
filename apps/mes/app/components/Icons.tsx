@@ -10,6 +10,7 @@ import {
   LuCircleX,
   LuClipboardCheck,
   LuClock,
+  LuEye,
   LuFlaskConical,
   LuGroup,
   LuHammer,
@@ -235,7 +236,9 @@ export const ProcedureStepTypeIcon = ({
     case "List":
       return <LuList className={cn("text-orange-600", className)} />;
     case "File":
-      return <LuImage className={cn("text-indigo-500", className)} />;
+      return <LuImage className={cn("text-purple-500", className)} />;
+    case "Inspection":
+      return <LuEye className={cn("text-indigo-500", className)} />;
   }
 };
 

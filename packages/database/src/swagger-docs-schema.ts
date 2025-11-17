@@ -32059,6 +32059,12 @@ export default {
             $ref: "#/parameters/rowFilter.jobOperationStep.description",
           },
           {
+            $ref: "#/parameters/rowFilter.jobOperationStep.nonConformanceActionId",
+          },
+          {
+            $ref: "#/parameters/rowFilter.jobOperationStep.nonConformanceInvestigationId",
+          },
+          {
             $ref: "#/parameters/select",
           },
           {
@@ -32169,6 +32175,12 @@ export default {
             $ref: "#/parameters/rowFilter.jobOperationStep.description",
           },
           {
+            $ref: "#/parameters/rowFilter.jobOperationStep.nonConformanceActionId",
+          },
+          {
+            $ref: "#/parameters/rowFilter.jobOperationStep.nonConformanceInvestigationId",
+          },
+          {
             $ref: "#/parameters/preferReturn",
           },
         ],
@@ -32231,6 +32243,12 @@ export default {
           },
           {
             $ref: "#/parameters/rowFilter.jobOperationStep.description",
+          },
+          {
+            $ref: "#/parameters/rowFilter.jobOperationStep.nonConformanceActionId",
+          },
+          {
+            $ref: "#/parameters/rowFilter.jobOperationStep.nonConformanceInvestigationId",
           },
           {
             $ref: "#/parameters/body.jobOperationStep",
@@ -62604,6 +62622,7 @@ export default {
             "List",
             "File",
             "Task",
+            "Inspection",
           ],
           format: 'public."procedureStepType"',
           type: "string",
@@ -68397,6 +68416,7 @@ export default {
             "List",
             "File",
             "Task",
+            "Inspection",
           ],
           format: 'public."procedureStepType"',
           type: "string",
@@ -71814,6 +71834,7 @@ export default {
             "List",
             "File",
             "Task",
+            "Inspection",
           ],
           format: 'public."procedureStepType"',
           type: "string",
@@ -75531,6 +75552,7 @@ export default {
             "List",
             "File",
             "Task",
+            "Inspection",
           ],
           format: 'public."procedureStepType"',
           type: "string",
@@ -75594,6 +75616,18 @@ export default {
         },
         description: {
           format: "json",
+        },
+        nonConformanceActionId: {
+          description:
+            "Note:\nThis is a Foreign Key to `nonConformanceActionTask.id`.<fk table='nonConformanceActionTask' column='id'/>",
+          format: "text",
+          type: "string",
+        },
+        nonConformanceInvestigationId: {
+          description:
+            "Note:\nThis is a Foreign Key to `nonConformanceInvestigationTask.id`.<fk table='nonConformanceInvestigationTask' column='id'/>",
+          format: "text",
+          type: "string",
         },
       },
       type: "object",
@@ -81488,7 +81522,12 @@ export default {
           type: "string",
         },
         documentType: {
-          enum: ["Quote", "SupplierQuote", "Customer", "Non-Conformance"],
+          enum: [
+            "Quote",
+            "SupplierQuote",
+            "Customer",
+            "Non-Conformance Supplier",
+          ],
           format: 'public."externalLinkDocumentType"',
           type: "string",
         },
@@ -81742,6 +81781,7 @@ export default {
             "List",
             "File",
             "Task",
+            "Inspection",
           ],
           format: 'public."procedureStepType"',
           type: "string",
@@ -104494,6 +104534,18 @@ export default {
     },
     "rowFilter.jobOperationStep.description": {
       name: "description",
+      required: false,
+      in: "query",
+      type: "string",
+    },
+    "rowFilter.jobOperationStep.nonConformanceActionId": {
+      name: "nonConformanceActionId",
+      required: false,
+      in: "query",
+      type: "string",
+    },
+    "rowFilter.jobOperationStep.nonConformanceInvestigationId": {
+      name: "nonConformanceInvestigationId",
       required: false,
       in: "query",
       type: "string",

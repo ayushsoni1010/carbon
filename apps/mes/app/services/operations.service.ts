@@ -390,6 +390,7 @@ export async function getNonConformanceActions(
   });
 
   return (result.data ?? []) as {
+    id: string;
     actionTypeName: string;
     assignee: string;
     notes: JSONContent;

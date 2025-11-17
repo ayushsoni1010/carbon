@@ -103,6 +103,7 @@ export const path = {
     finish: `${x}/finish`,
     health: "/health",
     kanbanComplete: (id: string) => `${ERP_URL}/api/kanban/complete/${id}`,
+    inspectionSteps: `${x}/steps/inspection`,
     inventoryAdjustment: `${x}/adjustment`,
     issue: `${x}/issue`,
     issueTrackedEntity: `${x}/issue-tracked-entity`,
