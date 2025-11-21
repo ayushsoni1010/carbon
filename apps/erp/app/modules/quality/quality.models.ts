@@ -194,7 +194,17 @@ export const issueWorkflowValidator = z.object({
     }),
   priority: z.enum(nonConformancePriority),
   source: z.enum(nonConformanceSource),
-  requiredActionIds: z.array(z.string()).optional(),
+  requiredActionIds: z
+    .string()
+    .optional()
+    .transform((val) => {
+      if (!val) return [];
+      try {
+        return JSON.parse(val) as string[];
+      } catch (e) {
+        return [];
+      }
+    }),
   approvalRequirements: z
     .array(z.enum(nonConformanceApprovalRequirement))
     .optional(),

@@ -5,6 +5,7 @@ import {
   Button,
   Card,
   CardContent,
+  Checkbox,
   generateHTML,
   Heading,
   HStack,
@@ -12,8 +13,10 @@ import {
   VStack,
 } from "@carbon/react";
 import { Editor } from "@carbon/react/Editor";
+import { Reorder, useDragControls } from "framer-motion";
 import { nanoid } from "nanoid";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { LuGripVertical, LuX } from "react-icons/lu";
 import type { z } from "zod/v3";
 import { Hidden, Input, Submit } from "~/components/Form";
 import { usePermissions, useUser } from "~/hooks";
@@ -29,14 +32,48 @@ import { getPriorityIcon } from "../Issue/IssueIcons";
 
 type IssueWorkflowFormProps = {
   initialValues: z.infer<typeof issueWorkflowValidator>;
-  investigationTypes: ListItem[];
   requiredActions: ListItem[];
   onClose: () => void;
 };
 
+function ReorderableActionItem({
+  action,
+  onRemove,
+}: {
+  action: ListItem;
+  onRemove: () => void;
+}) {
+  const dragControls = useDragControls();
+
+  return (
+    <Reorder.Item
+      value={action.id}
+      dragListener={false}
+      dragControls={dragControls}
+      className="w-full"
+    >
+      <div className="flex items-center gap-2 bg-card border rounded-lg px-3 py-2 w-full">
+        <button
+          className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground transition-colors p-1"
+          onPointerDown={(e) => dragControls.start(e)}
+        >
+          <LuGripVertical size={16} />
+        </button>
+        <span className="flex-1 text-sm">{action.name}</span>
+        <button
+          type="button"
+          onClick={onRemove}
+          className="text-muted-foreground hover:text-destructive transition-colors p-1"
+        >
+          <LuX size={16} />
+        </button>
+      </div>
+    </Reorder.Item>
+  );
+}
+
 const IssueWorkflowForm = ({
   initialValues,
-  investigationTypes,
   requiredActions,
   onClose,
 }: IssueWorkflowFormProps) => {
@@ -46,10 +83,44 @@ const IssueWorkflowForm = ({
     (JSON.parse(initialValues?.content ?? {}) as JSONContent) ?? {}
   );
 
+  // State for managing selected required actions in order
+  const [selectedActionIds, setSelectedActionIds] = useState<string[]>(
+    initialValues.requiredActionIds ?? []
+  );
+
+  // Update selectedActionIds when initialValues changes
+  useEffect(() => {
+    setSelectedActionIds(initialValues.requiredActionIds ?? []);
+  }, [initialValues.requiredActionIds]);
+
   const isEditing = initialValues.id !== undefined;
   const isDisabled = isEditing
     ? !permissions.can("update", "quality")
     : !permissions.can("create", "quality");
+
+  // Get the ordered list of selected actions
+  const orderedActions = selectedActionIds
+    .map((id) => requiredActions.find((action) => action.id === id))
+    .filter((action): action is ListItem => action !== undefined);
+
+  // Get available actions that haven't been selected yet
+  const availableActions = requiredActions.filter(
+    (action) => !selectedActionIds.includes(action.id)
+  );
+
+  const handleReorder = (newOrder: string[]) => {
+    setSelectedActionIds(newOrder);
+  };
+
+  const handleAddAction = (actionId: string) => {
+    if (!selectedActionIds.includes(actionId)) {
+      setSelectedActionIds([...selectedActionIds, actionId]);
+    }
+  };
+
+  const handleRemoveAction = (actionId: string) => {
+    setSelectedActionIds(selectedActionIds.filter((id) => id !== actionId));
+  };
 
   const { carbon } = useCarbon();
   const {
@@ -88,6 +159,10 @@ const IssueWorkflowForm = ({
     >
       <Hidden name="id" value={initialValues.id} />
       <Hidden name="content" value={JSON.stringify(content)} />
+      <Hidden
+        name="requiredActionIds"
+        value={JSON.stringify(selectedActionIds)}
+      />
       <VStack
         spacing={4}
         className="py-12 px-4 max-w-[50rem] h-full mx-auto gap-2"
@@ -158,24 +233,62 @@ const IssueWorkflowForm = ({
             }))}
           />
         </div>
-        <MultiSelect
-          name="investigationTypeIds"
-          label="Investigation Types"
-          options={investigationTypes.map((type) => ({
-            label: type.name,
-            value: type.id,
-          }))}
-          value={initialValues.investigationTypeIds}
-        />
+        <VStack spacing={2}>
+          <label
+            htmlFor="requiredActions"
+            className="text-xs text-muted-foreground font-medium"
+          >
+            Required Actions (in order)
+          </label>
 
-        <MultiSelect
-          name="requiredActionIds"
-          label="Required Actions"
-          options={requiredActions.map((action) => ({
-            label: action.name,
-            value: action.id,
-          }))}
-        />
+          {orderedActions.length > 0 && (
+            <Reorder.Group
+              axis="y"
+              values={selectedActionIds}
+              onReorder={handleReorder}
+              className="w-full space-y-2"
+            >
+              {orderedActions.map((action) => (
+                <ReorderableActionItem
+                  key={action.id}
+                  action={action}
+                  onRemove={() => handleRemoveAction(action.id)}
+                />
+              ))}
+            </Reorder.Group>
+          )}
+
+          {availableActions.length > 0 && (
+            <VStack spacing={2} className="mt-2">
+              <p className="text-xs text-muted-foreground">
+                Available Actions (click to add):
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                {availableActions.map((action) => (
+                  <button
+                    key={action.id}
+                    type="button"
+                    onClick={() => handleAddAction(action.id)}
+                    className="flex items-center gap-2 px-3 py-2 border border-dashed rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors text-left text-sm"
+                  >
+                    <Checkbox
+                      onClick={(e) => e.preventDefault()}
+                      isChecked={false}
+                      readOnly
+                    />
+                    <span>{action.name}</span>
+                  </button>
+                ))}
+              </div>
+            </VStack>
+          )}
+
+          {orderedActions.length === 0 && availableActions.length === 0 && (
+            <p className="text-sm text-muted-foreground italic">
+              No required actions available
+            </p>
+          )}
+        </VStack>
 
         <MultiSelect
           name="approvalRequirements"

@@ -42,7 +42,6 @@ type IssueFormProps = {
   initialValues: IssueFormValues;
   nonConformanceWorkflows: IssueWorkflow[];
   nonConformanceTypes: ListItem[];
-  investigationTypes: ListItem[];
   requiredActions: ListItem[];
 };
 
@@ -50,7 +49,6 @@ const IssueForm = ({
   initialValues,
   nonConformanceWorkflows,
   nonConformanceTypes,
-  investigationTypes,
   requiredActions,
 }: IssueFormProps) => {
   const permissions = usePermissions();
@@ -59,13 +57,11 @@ const IssueForm = ({
   const [workflow, setWorkflow] = useState<{
     priority: string;
     source: string;
-    investigationTypeIds: string[];
     requiredActionIds: string[];
     approvalRequirements: string[];
   }>({
     priority: initialValues.priority,
     source: initialValues.source,
-    investigationTypeIds: initialValues.investigationTypeIds ?? [],
     requiredActionIds: initialValues.requiredActionIds ?? [],
     approvalRequirements: initialValues.approvalRequirements ?? [],
   });
@@ -82,7 +78,6 @@ const IssueForm = ({
         setWorkflow({
           priority: selectedWorkflow.priority,
           source: selectedWorkflow.source,
-          investigationTypeIds: selectedWorkflow.investigationTypeIds ?? [],
           requiredActionIds: selectedWorkflow.requiredActionIds ?? [],
           approvalRequirements: selectedWorkflow.approvalRequirements ?? [],
         });
@@ -157,21 +152,6 @@ const IssueForm = ({
             </div>
 
             <VStack spacing={4}>
-              <MultiSelect
-                name="investigationTypeIds"
-                label="Investigation Types"
-                options={investigationTypes.map((type) => ({
-                  label: type.name,
-                  value: type.id,
-                }))}
-                value={workflow.investigationTypeIds}
-                onChange={(value) => {
-                  setWorkflow({
-                    ...workflow,
-                    investigationTypeIds: value.map((v) => v.value),
-                  });
-                }}
-              />
               <MultiSelect
                 name="requiredActionIds"
                 label="Required Actions"

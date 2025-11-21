@@ -3,11 +3,9 @@ import { IssuePDF } from "@carbon/documents/pdf";
 import { renderToStream } from "@react-pdf/renderer";
 import { type LoaderFunctionArgs } from "@vercel/remix";
 import {
-  getInvestigationTypesList,
   getIssue,
   getIssueActionTasks,
   getIssueApprovalTasks,
-  getIssueInvestigationTasks,
   getIssueItems,
   getIssueReviewers,
   getIssueTypes,
@@ -28,22 +26,18 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     company,
     nonConformance,
     nonConformanceTypes,
-    investigationTasks,
     actionTasks,
     approvalTasks,
     reviewers,
-    investigationTypes,
-    actionTypes,
+    requiredActions,
     items,
   ] = await Promise.all([
     getCompany(client, companyId),
     getIssue(client, id),
     getIssueTypes(client, companyId),
-    getIssueInvestigationTasks(client, id, companyId),
     getIssueActionTasks(client, id, companyId),
     getIssueApprovalTasks(client, id, companyId),
     getIssueReviewers(client, id, companyId),
-    getInvestigationTypesList(client, companyId),
     getRequiredActionsList(client, companyId),
     getIssueItems(client, id, companyId),
   ]);
@@ -58,10 +52,6 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   if (nonConformanceTypes.error) {
     console.error(nonConformanceTypes.error);
-  }
-
-  if (investigationTasks.error) {
-    console.error(investigationTasks.error);
   }
 
   if (actionTasks.error) {
@@ -80,7 +70,6 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     company.error ||
     nonConformance.error ||
     nonConformanceTypes.error ||
-    investigationTasks.error ||
     actionTasks.error ||
     approvalTasks.error ||
     items.error
@@ -96,10 +85,8 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       locale={locale}
       nonConformance={nonConformance.data}
       nonConformanceTypes={nonConformanceTypes.data ?? []}
-      investigationTasks={investigationTasks.data ?? []}
-      investigationTypes={investigationTypes.data ?? []}
       actionTasks={actionTasks.data ?? []}
-      actionTypes={actionTypes.data ?? []}
+      requiredActions={requiredActions.data ?? []}
       reviewers={reviewers.data ?? []}
       items={items.data ?? []}
     />

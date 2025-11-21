@@ -365,6 +365,7 @@ export const path = {
     bulkUpdateJob: `${x}/job/update`,
     bulkUpdateIssue: `${x}/issue/update`,
     updateIssueItem: `${x}/issue/item/update`,
+    issueActionTasksOrder: `${x}/issue/action-tasks/order`,
     bulkUpdateIssueWorkflow: `${x}/issue-workflow/update`,
     bulkUpdatePurchaseOrder: `${x}/purchase-order/update`,
     bulkUpdatePurchaseInvoice: `${x}/purchase-invoice/update`,

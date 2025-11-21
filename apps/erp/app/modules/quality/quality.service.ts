@@ -13,7 +13,6 @@ import type {
   gaugeCalibrationStatus,
   gaugeTypeValidator,
   gaugeValidator,
-  investigationTypeValidator,
   issueTypeValidator,
   issueValidator,
   issueWorkflowValidator,
@@ -22,7 +21,6 @@ import type {
   qualityDocumentStepValidator,
   qualityDocumentValidator,
 } from "./quality.models";
-
 export async function activateGauge(
   client: SupabaseClient<Database>,
   gaugeId: string

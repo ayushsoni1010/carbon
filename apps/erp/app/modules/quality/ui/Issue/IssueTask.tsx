@@ -31,6 +31,7 @@ import { formatDate } from "@carbon/utils";
 import { parseDate } from "@internationalized/date";
 import { useFetchers, useParams, useSubmit } from "@remix-run/react";
 import { nanoid } from "nanoid";
+import type { DragControls } from "framer-motion";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   LuCalendar,
@@ -39,6 +40,7 @@ import {
   LuCirclePlay,
   LuCog,
   LuContainer,
+  LuGripVertical,
   LuLoaderCircle,
 } from "react-icons/lu";
 import { RxCheck } from "react-icons/rx";
@@ -243,11 +245,15 @@ export function TaskItem({
   type,
   suppliers,
   isDisabled = false,
+  showDragHandle = false,
+  dragControls,
 }: {
   task: IssueInvestigationTask | IssueActionTask | IssueReviewer;
   type: "investigation" | "action" | "review";
   suppliers: { supplierId: string; externalLinkId: string | null }[];
   isDisabled?: boolean;
+  showDragHandle?: boolean;
+  dragControls?: DragControls;
 }) {
   const permissions = usePermissions();
   const disclosure = useDisclosure({
@@ -277,20 +283,30 @@ export function TaskItem({
       ? (task as IssueActionTask).name
       : (task as IssueReviewer).title;
   return (
-    <div className="rounded-lg border w-full flex flex-col">
+    <div className="rounded-lg border w-full flex flex-col bg-card">
       <div className="flex w-full justify-between px-4 py-2 items-center">
-        <div className="flex flex-col">
+        <div className="flex flex-col flex-1">
           <span className="text-base font-semibold tracking-tight">
             {taskTitle}
           </span>
         </div>
-        <IconButton
-          icon={<LuChevronRight />}
-          variant="ghost"
-          onClick={disclosure.onToggle}
-          aria-label="Open task details"
-          className={cn(disclosure.isOpen && "rotate-90")}
-        />
+        <div className="flex items-center gap-1">
+          {showDragHandle && !isDisabled && dragControls && (
+            <button
+              className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground transition-colors p-1"
+              onPointerDown={(e) => dragControls.start(e)}
+            >
+              <LuGripVertical size={16} />
+            </button>
+          )}
+          <IconButton
+            icon={<LuChevronRight />}
+            variant="ghost"
+            onClick={disclosure.onToggle}
+            aria-label="Open task details"
+            className={cn(disclosure.isOpen && "rotate-90")}
+          />
+        </div>
       </div>
 
       {disclosure.isOpen && (

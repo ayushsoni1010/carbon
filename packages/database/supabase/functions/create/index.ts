@@ -212,16 +212,19 @@ serve(async (req: Request) => {
         const reviewerInserts: Database["public"]["Tables"]["nonConformanceReviewer"]["Insert"][] =
           [];
 
-        nonConformance.data?.requiredActionIds?.forEach((actionTypeId) => {
-          if (!currentActionTasks[actionTypeId]) {
-            actionTaskInserts.push({
-              nonConformanceId: id,
-              actionTypeId,
-              companyId,
-              createdBy: userId,
-            });
+        nonConformance.data?.requiredActionIds?.forEach(
+          (actionTypeId, index) => {
+            if (!currentActionTasks[actionTypeId]) {
+              actionTaskInserts.push({
+                nonConformanceId: id,
+                actionTypeId,
+                sortOrder: index + 1,
+                companyId,
+                createdBy: userId,
+              });
+            }
           }
-        });
+        );
 
         nonConformance.data?.approvalRequirements?.forEach((approvalType) => {
           if (!currentApprovalTasks[approvalType]) {

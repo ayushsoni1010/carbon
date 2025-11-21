@@ -15,11 +15,6 @@ type IssueItem = Database["public"]["Tables"]["nonConformanceItem"]["Row"] & {
   name: string | null;
 };
 
-type InvestigationTask =
-  Database["public"]["Tables"]["nonConformanceInvestigationTask"]["Row"] & {
-    supplier: { name: string } | null;
-  };
-
 type ActionTask =
   Database["public"]["Tables"]["nonConformanceActionTask"]["Row"] & {
     supplier: { name: string } | null;
@@ -28,10 +23,8 @@ type ActionTask =
 interface IssuePDFProps extends PDF {
   nonConformance: Database["public"]["Tables"]["nonConformance"]["Row"];
   nonConformanceTypes: Database["public"]["Tables"]["nonConformanceType"]["Row"][];
-  investigationTasks: InvestigationTask[];
-  investigationTypes: ListItem[];
   actionTasks: ActionTask[];
-  actionTypes: ListItem[];
+  requiredActions: ListItem[];
   reviewers: Database["public"]["Tables"]["nonConformanceReviewer"]["Row"][];
   items: IssueItem[];
 }
@@ -58,14 +51,16 @@ const IssuePDF = ({
   meta,
   nonConformance,
   nonConformanceTypes,
-  investigationTasks,
-  investigationTypes,
   actionTasks,
-  actionTypes,
+  requiredActions,
   reviewers,
   items,
   title = "Issue Report",
 }: IssuePDFProps) => {
+  // Sort action tasks by sortOrder
+  const sortedActionTasks = [...actionTasks].sort(
+    (a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)
+  );
   return (
     <Template
       title={title}
@@ -141,9 +136,10 @@ const IssuePDF = ({
             ))}
           </View>
         )}
-        {investigationTasks.length > 0 && (
+        {sortedActionTasks.length > 0 && (
           <View style={tw("mb-10")} wrap={false}>
-            {investigationTasks.map((task) => (
+            <Text style={tw("font-bold mb-2")}>Actions</Text>
+            {sortedActionTasks.map((task) => (
               <View
                 key={task.id}
                 style={tw("flex flex-col gap-2 border-b border-gray-300 mb-10")}
@@ -151,42 +147,9 @@ const IssuePDF = ({
                 <View style={tw("flex flex-row justify-between")}>
                   <Text style={tw("font-bold")}>
                     {
-                      investigationTypes.find(
-                        (type) => type.id === task.investigationTypeId
+                      requiredActions.find(
+                        (action) => action.id === task.actionTypeId
                       )?.name
-                    }
-                  </Text>
-                </View>
-                {task.supplier?.name && (
-                  <View style={tw("flex flex-row items-center gap-2")}>
-                    <Badge>{task.supplier.name}</Badge>
-                  </View>
-                )}
-                {task.completedDate && (
-                  <Text style={tw("text-sm")}>
-                    Completed: {task.completedDate}
-                  </Text>
-                )}
-                {Object.keys(task.notes ?? {}).length > 0 && (
-                  <Note content={task.notes as JSONContent} />
-                )}
-              </View>
-            ))}
-          </View>
-        )}
-
-        {actionTasks.length > 0 && (
-          <View style={tw("mb-10")} wrap={false}>
-            {actionTasks.map((task) => (
-              <View
-                key={task.id}
-                style={tw("flex flex-col gap-2 border-b border-gray-300 mb-10")}
-              >
-                <View style={tw("flex flex-row justify-between")}>
-                  <Text style={tw("font-bold")}>
-                    {
-                      actionTypes.find((type) => type.id === task.actionTypeId)
-                        ?.name
                     }
                   </Text>
                 </View>

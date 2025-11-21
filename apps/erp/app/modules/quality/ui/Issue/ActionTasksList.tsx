@@ -13,9 +13,11 @@ import {
   ModalHeader,
   ModalOverlay,
   ModalTitle,
+  useDebounce,
   VStack,
 } from "@carbon/react";
 import { useFetcher, useParams } from "@remix-run/react";
+import { Reorder, useDragControls } from "framer-motion";
 import { useCallback, useEffect, useState } from "react";
 import { LuCirclePlus } from "react-icons/lu";
 import { useRouteData } from "~/hooks";
@@ -23,6 +25,38 @@ import type { IssueActionTask } from "~/modules/quality";
 import type { ListItem } from "~/types";
 import { path } from "~/utils/path";
 import { TaskItem, TaskProgress } from "./IssueTask";
+
+function ReorderableTaskItem({
+  taskId,
+  task,
+  suppliers,
+  isDisabled,
+}: {
+  taskId: string;
+  task: IssueActionTask;
+  suppliers: { supplierId: string; externalLinkId: string | null }[];
+  isDisabled: boolean;
+}) {
+  const dragControls = useDragControls();
+
+  return (
+    <Reorder.Item
+      key={taskId}
+      value={taskId}
+      dragListener={false}
+      dragControls={dragControls}
+    >
+      <TaskItem
+        task={task}
+        type="action"
+        suppliers={suppliers}
+        isDisabled={isDisabled}
+        showDragHandle={true}
+        dragControls={dragControls}
+      />
+    </Reorder.Item>
+  );
+}
 
 export function ActionTasksList({
   tasks,
@@ -33,6 +67,49 @@ export function ActionTasksList({
   suppliers: { supplierId: string; externalLinkId: string | null }[];
   isDisabled: boolean;
 }) {
+  const sortOrderFetcher = useFetcher<{}>();
+
+  // Initialize sort order state based on existing tasks
+  const [sortOrder, setSortOrder] = useState<string[]>(() =>
+    [...tasks]
+      .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+      .map((task) => task.id)
+  );
+
+  // Update sort order when tasks change
+  useEffect(() => {
+    if (tasks && tasks.length > 0) {
+      const sorted = [...tasks]
+        .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0))
+        .map((task) => task.id);
+      setSortOrder(sorted);
+    }
+  }, [tasks]);
+
+  const onReorder = (newOrder: string[]) => {
+    if (isDisabled) return;
+
+    const updates: Record<string, number> = {};
+    newOrder.forEach((id, index) => {
+      updates[id] = index + 1;
+    });
+    setSortOrder(newOrder);
+    updateSortOrder(updates);
+  };
+
+  const updateSortOrder = useDebounce(
+    (updates: Record<string, number>) => {
+      let formData = new FormData();
+      formData.append("updates", JSON.stringify(updates));
+      sortOrderFetcher.submit(formData, {
+        method: "post",
+        action: path.to.issueActionTasksOrder,
+      });
+    },
+    1000,
+    true
+  );
+
   if (tasks.length === 0) return <NewAction isDisabled={isDisabled} />;
 
   return (
@@ -44,19 +121,26 @@ export function ActionTasksList({
         <TaskProgress tasks={tasks} />
       </HStack>
       <CardContent>
-        <VStack spacing={3}>
-          {tasks
-            .sort((a, b) => a.name?.localeCompare(b.name ?? "") ?? 0)
-            .map((task) => (
-              <TaskItem
-                key={task.id}
+        <Reorder.Group
+          axis="y"
+          values={sortOrder}
+          onReorder={onReorder}
+          className="w-full space-y-3"
+        >
+          {sortOrder.map((taskId) => {
+            const task = tasks.find((t) => t.id === taskId);
+            if (!task) return null;
+            return (
+              <ReorderableTaskItem
+                key={taskId}
+                taskId={taskId}
                 task={task}
-                type="action"
                 suppliers={suppliers}
                 isDisabled={isDisabled}
               />
-            ))}
-        </VStack>
+            );
+          })}
+        </Reorder.Group>
       </CardContent>
     </Card>
   );

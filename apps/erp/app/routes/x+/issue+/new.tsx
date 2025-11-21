@@ -11,7 +11,6 @@ import { json, redirect } from "@vercel/remix";
 import { useUrlParams, useUser } from "~/hooks";
 import {
   deleteIssue,
-  getInvestigationTypesList,
   getIssueTypesList,
   getIssueWorkflowsList,
   getRequiredActionsList,
@@ -36,18 +35,15 @@ export async function loader({ request }: LoaderFunctionArgs) {
     view: "quality",
   });
 
-  const [workflows, types, investigationTypes, requiredActions] =
-    await Promise.all([
-      getIssueWorkflowsList(client, companyId),
-      getIssueTypesList(client, companyId),
-      getInvestigationTypesList(client, companyId),
-      getRequiredActionsList(client, companyId),
-    ]);
+  const [workflows, types, requiredActions] = await Promise.all([
+    getIssueWorkflowsList(client, companyId),
+    getIssueTypesList(client, companyId),
+    getRequiredActionsList(client, companyId),
+  ]);
 
   return json({
     workflows: workflows.data ?? [],
     types: types.data ?? [],
-    investigationTypes: investigationTypes.data ?? [],
     requiredActions: requiredActions.data ?? [],
   });
 }
@@ -147,8 +143,7 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function IssueNewRoute() {
-  const { workflows, types, investigationTypes, requiredActions } =
-    useLoaderData<typeof loader>();
+  const { workflows, types, requiredActions } = useLoaderData<typeof loader>();
 
   const { defaults } = useUser();
   const [params] = useUrlParams();
@@ -170,7 +165,6 @@ export default function IssueNewRoute() {
     nonConformanceId: undefined,
     approvalRequirements: [],
     customerId: customerId ?? "",
-    investigationTypeIds: [],
     items: itemId ? [itemId] : [],
     jobId: jobId ?? "",
     jobOperationId: jobOperationId ?? "",
@@ -201,7 +195,6 @@ export default function IssueNewRoute() {
         initialValues={initialValues}
         nonConformanceWorkflows={workflows}
         nonConformanceTypes={types}
-        investigationTypes={investigationTypes}
         requiredActions={requiredActions}
       />
     </div>

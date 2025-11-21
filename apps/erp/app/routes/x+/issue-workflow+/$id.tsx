@@ -8,7 +8,6 @@ import { useLoaderData, useNavigate, useParams } from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@vercel/remix";
 import { json, redirect } from "@vercel/remix";
 import {
-  getInvestigationTypesList,
   getIssueWorkflow,
   getRequiredActionsList,
   issueWorkflowValidator,
@@ -34,9 +33,8 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const { id } = params;
   if (!id) throw new Error("Could not find id");
 
-  const [workflow, investigationTypes, requiredActions] = await Promise.all([
+  const [workflow, requiredActions] = await Promise.all([
     getIssueWorkflow(client, id),
-    getInvestigationTypesList(client, companyId),
     getRequiredActionsList(client, companyId),
   ]);
 
@@ -52,7 +50,6 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   return json({
     workflow: workflow.data,
-    investigationTypes: investigationTypes.data ?? [],
     requiredActions: requiredActions.data ?? [],
   });
 }
@@ -100,8 +97,7 @@ export default function IssueWorkflowRoute() {
   const { id } = useParams();
   if (!id) throw new Error("Could not find id");
 
-  const { workflow, investigationTypes, requiredActions } =
-    useLoaderData<typeof loader>();
+  const { workflow, requiredActions } = useLoaderData<typeof loader>();
   const navigate = useNavigate();
   const onClose = () => {
     navigate(path.to.issueWorkflows);
@@ -113,7 +109,6 @@ export default function IssueWorkflowRoute() {
     content: JSON.stringify(workflow?.content),
     priority: (workflow?.priority ?? "Medium") as "Medium",
     source: (workflow?.source ?? "Internal") as "Internal",
-    investigationTypeIds: workflow?.investigationTypeIds ?? [],
     requiredActionIds: workflow?.requiredActionIds ?? [],
     approvalRequirements: workflow?.approvalRequirements ?? [],
   };
@@ -122,7 +117,6 @@ export default function IssueWorkflowRoute() {
     <ScrollArea className="w-full h-[calc(100dvh-49px)] bg-card">
       <IssueWorkflowForm
         initialValues={initialValues}
-        investigationTypes={investigationTypes}
         requiredActions={requiredActions}
         onClose={onClose}
       />
