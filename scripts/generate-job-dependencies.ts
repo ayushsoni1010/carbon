@@ -31,9 +31,10 @@ const supabaseAdmin = createClient(
   if (!jobs) throw new Error("No jobs found");
 
   for await (const job of jobs) {
-    const result = await supabaseAdmin.functions.invoke("scheduler", {
+    const result = await supabaseAdmin.functions.invoke("schedule", {
       body: {
-        type: "dependencies",
+        mode: "initial",
+        direction: "backward",
         jobId: job.id,
         companyId: COMPANY_ID,
         userId: USER_ID,

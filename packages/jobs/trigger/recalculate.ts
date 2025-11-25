@@ -1,5 +1,6 @@
 import { getCarbonServiceRole } from "@carbon/auth";
 import type { FunctionsResponse } from "@supabase/functions-js";
+import { FunctionRegion } from "@supabase/supabase-js";
 import { task } from "@trigger.dev/sdk";
 import { z } from "zod/v3";
 
@@ -95,10 +96,14 @@ async function recalculateJobMakeMethodRequirements(
     userId: string;
   }
 ) {
-  return client.functions.invoke("scheduler", {
+  return client.functions.invoke("schedule", {
     body: {
-      type: "make-method-requirements",
-      ...params,
+      mode: "initial",
+      direction: "backward",
+      jobId: params.id,
+      companyId: params.companyId,
+      userId: params.userId,
     },
+    region: FunctionRegion.UsEast1,
   });
 }

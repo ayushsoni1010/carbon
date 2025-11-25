@@ -1,378 +1,569 @@
-import { Kysely } from "https://esm.sh/kysely@0.26.3";
-import SupabaseClient from "https://esm.sh/v135/@supabase/supabase-js@2.33.1/dist/module/SupabaseClient.d.ts";
-import { DB } from "../database.ts";
-import { getJobMethodTree, JobMethodTreeItem } from "../methods.ts";
-import { Database } from "../types.ts";
+import type { Kysely } from "https://esm.sh/kysely@0.26.3";
+import type SupabaseClient from "https://esm.sh/v135/@supabase/supabase-js@2.33.1/dist/module/SupabaseClient.d.ts";
+import type { DB } from "../database.ts";
+import type { Database } from "../types.ts";
+import {
+  AssemblyHandler,
+  buildMakeMethodDependencies,
+} from "./assembly-handler.ts";
+import { calculateOperationDates } from "./date-calculator.ts";
+import {
+  buildOperationDependencies,
+  dependenciesToRecords,
+  DependencyGraphImpl,
+} from "./dependency-manager.ts";
 import { MaterialManager } from "./material-manager.ts";
-import { ResourceManager } from "./resource-manager.ts";
-import { BaseOperation, SchedulingStrategy } from "./types.ts";
+import {
+  applyPriorities,
+  calculatePrioritiesByWorkCenter,
+  toOperationWithJobInfo,
+} from "./priority-calculator.ts";
+import type {
+  BaseOperation,
+  Job,
+  JobOperationDependency,
+  OperationWithJobInfo,
+  ScheduledOperation,
+  SchedulingDirection,
+  SchedulingMode,
+  SchedulingOptions,
+  SchedulingResult,
+} from "./types.ts";
+import {
+  applyWorkCenterSelections,
+  WorkCenterSelector,
+} from "./work-center-selector.ts";
 
-class SchedulingEngine {
+/**
+ * Unified Scheduling Engine
+ * Orchestrates all scheduling operations for both initial scheduling and rescheduling
+ */
+export class SchedulingEngine {
   private client: SupabaseClient<Database>;
   private db: Kysely<DB>;
   private jobId: string;
   private companyId: string;
-  private operationsToSchedule: BaseOperation[];
-  private operationsByJobMakeMethodId: Record<string, BaseOperation[]>;
-  private makeMethodDependencies: {
-    id: string;
-    parentId: string | null;
-  }[];
-  private validMaterialIds: string[];
+  private userId: string;
+  private direction: SchedulingDirection;
+  private mode: SchedulingMode;
 
-  private resourceManager: ResourceManager;
+  private job: Job | null = null;
+  private operations: BaseOperation[] = [];
+  private dependencies: JobOperationDependency[] = [];
+  private scheduledOperations: Map<string, ScheduledOperation> = new Map();
+  private affectedWorkCenters: Set<string> = new Set();
+  private assemblyDepth: number = 0;
+  private conflictsDetected: number = 0;
+
+  private assemblyHandler: AssemblyHandler;
+  private workCenterSelector: WorkCenterSelector | null = null;
   private materialManager: MaterialManager;
 
-  constructor({
-    client,
-    db,
-    jobId,
-    companyId,
-  }: {
-    client: SupabaseClient<Database>;
-    db: Kysely<DB>;
-    jobId: string;
-    companyId: string;
-  }) {
-    this.db = db;
-    this.client = client;
-    this.companyId = companyId;
-    this.jobId = jobId;
-    this.operationsToSchedule = [];
-    this.operationsByJobMakeMethodId = {};
-    this.validMaterialIds = [];
-    this.makeMethodDependencies = [];
-
-    this.materialManager = new MaterialManager(db, companyId);
-    this.resourceManager = new ResourceManager(db, companyId);
-  }
-
-  async initialize(): Promise<void> {
-    if (!this.db) {
-      throw new Error("Database connection is not initialized");
+  constructor(
+    options: SchedulingOptions & {
+      client: SupabaseClient<Database>;
+      db: Kysely<DB>;
     }
-    await Promise.all([
-      this.resourceManager.initialize(this.jobId),
-      this.materialManager.initialize(this.jobId),
-      this.getOperationsAndMaterialsToSchedule(),
-    ]);
+  ) {
+    this.client = options.client;
+    this.db = options.db;
+    this.jobId = options.jobId;
+    this.companyId = options.companyId;
+    this.userId = options.userId;
+    this.direction = options.direction;
+    this.mode = options.mode;
+
+    this.assemblyHandler = new AssemblyHandler(
+      this.client,
+      this.db,
+      this.companyId
+    );
+    this.materialManager = new MaterialManager(this.db, this.companyId);
   }
 
-  async addDependencies(): Promise<void> {
-    const operationDependencies: Record<string, Set<string>> = {};
-    const makeMethodIds = [
-      ...new Set(this.makeMethodDependencies.map((m) => m.id)),
-    ];
+  /**
+   * Initialize the engine - load job, operations, and dependencies
+   */
+  async initialize(): Promise<void> {
+    // Load job
+    const job = await this.db
+      .selectFrom("job")
+      .select(["id", "dueDate", "deadlineType", "locationId", "priority"])
+      .where("id", "=", this.jobId)
+      .executeTakeFirst();
+
+    if (!job) {
+      throw new Error(`Job ${this.jobId} not found`);
+    }
+
+    this.job = job;
+
+    // Initialize work center selector with location
+    if (job.locationId) {
+      this.workCenterSelector = new WorkCenterSelector(
+        this.db,
+        this.companyId,
+        job.locationId
+      );
+      await this.workCenterSelector.initialize();
+    }
+
+    // Load operations
+    this.operations = (await this.db
+      .selectFrom("jobOperation")
+      .selectAll()
+      .where("jobId", "=", this.jobId)
+      .where("status", "not in", ["Done", "Canceled"])
+      .orderBy("order")
+      .execute()) as BaseOperation[];
+
+    // Load existing dependencies (for reschedule mode)
+    if (this.mode === "reschedule") {
+      const deps = await this.db
+        .selectFrom("jobOperationDependency")
+        .selectAll()
+        .where("jobId", "=", this.jobId)
+        .execute();
+
+      this.dependencies = deps.map((d) => ({
+        operationId: d.operationId,
+        dependsOnId: d.dependsOnId,
+        jobId: d.jobId,
+      }));
+    }
+
+    // Initialize material manager
+    await this.materialManager.initialize(this.jobId);
+
+    // Build assembly tree and get depth
+    const assemblyTree = await this.assemblyHandler.buildAssemblyTree(
+      this.jobId
+    );
+    if (assemblyTree) {
+      this.assemblyDepth = this.assemblyHandler.getAssemblyDepth(assemblyTree);
+    }
+  }
+
+  /**
+   * Create operation dependencies based on assembly structure
+   * Only called in initial scheduling mode
+   */
+  async createDependencies(): Promise<void> {
+    if (this.mode !== "initial") {
+      return;
+    }
+
+    // Build assembly tree
+    const assemblyTree = await this.assemblyHandler.buildAssemblyTree(
+      this.jobId
+    );
+    if (!assemblyTree) {
+      console.warn("No assembly tree found for job", this.jobId);
+      return;
+    }
+
+    // Get all jobMakeMethodIds
+    const makeMethodIds =
+      this.assemblyHandler.getAllJobMakeMethodIds(assemblyTree);
+
+    // Get job materials for linking
     const jobMaterials = await this.db
       .selectFrom("jobMaterialWithMakeMethodId")
       .selectAll()
       .where("jobMakeMethodId", "in", makeMethodIds)
       .execute();
 
+    // Build map from make method to operation
     const jobMakeMethodToOperationId: Record<string, string | null> = {};
-
-    jobMaterials.forEach((m) => {
+    for (const m of jobMaterials) {
       if (m.jobMaterialMakeMethodId) {
         jobMakeMethodToOperationId[m.jobMaterialMakeMethodId] =
           m.jobOperationId;
       }
-    });
-
-    // Initialize dependencies for all operations
-    for (const operation of this.operationsToSchedule) {
-      if (!operation.id) continue;
-      operationDependencies[operation.id] = new Set<string>();
     }
 
-    for await (const makeMethod of this.makeMethodDependencies) {
-      const operations = this.operationsByJobMakeMethodId[makeMethod.id] ?? [];
-      const lastOperation = operations[operations.length - 1];
-
-      if (!lastOperation) continue;
-
-      if (makeMethod.id) {
-        const parentOperation = jobMakeMethodToOperationId[makeMethod.id];
-
-        if (parentOperation) {
-          operationDependencies[parentOperation].add(lastOperation.id!);
+    // Group operations by jobMakeMethodId
+    const operationsByMethod = new Map<string, BaseOperation[]>();
+    for (const op of this.operations) {
+      if (op.jobMakeMethodId) {
+        if (!operationsByMethod.has(op.jobMakeMethodId)) {
+          operationsByMethod.set(op.jobMakeMethodId, []);
         }
+        operationsByMethod.get(op.jobMakeMethodId)!.push(op);
       }
+    }
 
-      operations.forEach((op, index) => {
-        op.order = this.getParallelizedOrder(index, op, operations);
-      });
-      operations.sort((a, b) => (a?.order ?? 0) - (b?.order ?? 0));
+    // Build make method dependencies
+    const makeMethodDeps = buildMakeMethodDependencies(assemblyTree);
 
-      // Create a map of operations by order
-      const operationsByOrder: Record<number, string[]> = {};
-      operations.forEach((op) => {
-        if (!op.id) return;
-        const order = op.order ?? 0;
-        if (!operationsByOrder[order]) {
-          operationsByOrder[order] = [];
-        }
-        operationsByOrder[order].push(op.id);
-      });
+    // Build operation dependencies
+    const allDependencies = new Map<string, Set<string>>();
 
-      // Create dependencies between sequential operations
-      const orderKeys = Object.keys(operationsByOrder)
-        .map(Number)
-        .sort((a, b) => a - b);
-      for (let i = 1; i < orderKeys.length; i++) {
-        const currentOrderOps = operationsByOrder[orderKeys[i]];
-        const previousOrderOps = operationsByOrder[orderKeys[i - 1]];
+    // Initialize all operations
+    for (const op of this.operations) {
+      if (op.id) {
+        allDependencies.set(op.id, new Set());
+      }
+    }
 
-        // Add all previous order operations as dependencies for current order operations
-        currentOrderOps.forEach((opId) => {
-          if (!operationDependencies[opId]) {
-            operationDependencies[opId] = new Set<string>();
+    // Process each make method's operations
+    for (const methodDep of makeMethodDeps) {
+      const methodOps = operationsByMethod.get(methodDep.id) ?? [];
+
+      // Get last operation of this method
+      const sortedOps = [...methodOps].sort(
+        (a, b) => (a.order ?? 0) - (b.order ?? 0)
+      );
+      const lastOperation = sortedOps[sortedOps.length - 1];
+
+      // If this method has a parent, link last op to parent's consuming operation
+      if (methodDep.id && methodDep.parentId !== null) {
+        const parentOperation = jobMakeMethodToOperationId[methodDep.id];
+        if (parentOperation && lastOperation?.id) {
+          const deps = allDependencies.get(parentOperation);
+          if (deps) {
+            deps.add(lastOperation.id);
           }
-          previousOrderOps.forEach((prevOpId) => {
-            operationDependencies[opId].add(prevOpId);
-          });
-        });
+        }
+      }
+
+      // Build dependencies within this method (handling "With Previous")
+      const methodDeps = buildOperationDependencies(methodOps);
+      for (const [opId, deps] of methodDeps) {
+        const existing = allDependencies.get(opId);
+        if (existing) {
+          for (const depId of deps) {
+            existing.add(depId);
+          }
+        }
       }
     }
 
+    // Delete existing dependencies
     await this.db
       .deleteFrom("jobOperationDependency")
       .where("jobId", "=", this.jobId)
       .execute();
 
-    if (Object.keys(operationDependencies).length > 0) {
-      for await (const [operationId, dependencies] of Object.entries(
-        operationDependencies
-      )) {
-        if (dependencies.size > 0) {
-          await this.db
-            .insertInto("jobOperationDependency")
-            .values(
-              Array.from(dependencies).map((dependency) => ({
-                jobId: this.jobId,
-                operationId,
-                dependsOnId: dependency,
-                companyId: this.companyId,
-              }))
-            )
-            .execute();
-        } else {
-          // these don't get handled by the trigger because the trigger
-          // is only fired when a dependency is added
-          await this.db
-            .updateTable("jobOperation")
-            .set({
-              status: "Ready",
-            })
-            .where("id", "=", operationId)
-            .execute();
-        }
-      }
-    }
-  }
-
-  async assign() {
-    await this.materialManager.assignOperationsToMaterials(
-      this.validMaterialIds,
-      this.operationsByJobMakeMethodId
+    // Insert new dependencies
+    const records = dependenciesToRecords(
+      allDependencies,
+      this.jobId,
+      this.companyId
     );
-  }
 
-  getParallelizedOrder(index: number, op: BaseOperation, ops: BaseOperation[]) {
-    if (op?.operationOrder !== "With Previous") return index + 1;
-    // traverse backwards through the list of ops to find the first op that is not "With Previous" and return its index + 1
-    for (let i = index - 1; i >= 0; i--) {
-      if (ops[i].operationOrder !== "With Previous") {
-        return i + 1;
+    if (records.length > 0) {
+      for (const record of records) {
+        await this.db
+          .insertInto("jobOperationDependency")
+          .values(record)
+          .execute();
       }
     }
 
-    return 1;
+    // Update operations with no dependencies to Ready status
+    for (const [opId, deps] of allDependencies) {
+      if (deps.size === 0) {
+        await this.db
+          .updateTable("jobOperation")
+          .set({ status: "Ready" })
+          .where("id", "=", opId)
+          .execute();
+      }
+    }
+
+    // Store dependencies for date calculation
+    this.dependencies = records.map((r) => ({
+      operationId: r.operationId,
+      dependsOnId: r.dependsOnId,
+      jobId: r.jobId,
+    }));
   }
 
-  async prioritize(
-    strategy: SchedulingStrategy = SchedulingStrategy.LeastTime
-  ): Promise<void> {
-    switch (strategy) {
-      case SchedulingStrategy.LeastTime: {
-        const workCenterUpdates: Record<
-          string,
-          { workCenterId: string; priority: number }
-        > = {};
+  /**
+   * Calculate dates for all operations
+   */
+  async calculateDates(): Promise<void> {
+    // Build dependency graph
+    const graph = new DependencyGraphImpl(this.operations, this.dependencies);
 
-        if (this.operationsToSchedule.length > 0) {
-          for (const operation of this.operationsToSchedule) {
-            if (!operation.processId || operation.operationType === "Outside") {
-              continue;
-            }
+    // Get anchor date based on direction
+    const anchorDate =
+      this.direction === "backward" ? this.job?.dueDate ?? null : null; // Forward scheduling would use start date
 
-            const result =
-              operation.workCenterId &&
-              this.resourceManager.hasWorkCenter(operation.workCenterId)
-                ? this.resourceManager.getPriorityByWorkCenterId(
-                    operation.workCenterId
-                  )
-                : this.resourceManager.getWorkCenterAndPriorityByProcessId(
-                    operation.processId
-                  );
+    // Calculate dates
+    this.scheduledOperations = calculateOperationDates(
+      this.operations,
+      graph,
+      anchorDate,
+      this.direction
+    );
 
-            console.log(
-              `Updating operation ${operation.id} with priority ${result.priority} and work center ${result.workCenter}`
-            );
+    // Count conflicts
+    this.conflictsDetected = 0;
+    for (const op of this.scheduledOperations.values()) {
+      if (op.hasConflict) {
+        this.conflictsDetected++;
+      }
+    }
+  }
 
-            if (!result.workCenter) {
-              console.error("No work center found for operation", operation);
-              continue;
-            }
-            workCenterUpdates[operation.id!] = {
-              workCenterId: result.workCenter,
-              priority: result.priority,
-            };
+  /**
+   * Select work centers for all operations
+   */
+  async selectWorkCenters(): Promise<void> {
+    if (!this.workCenterSelector) {
+      console.warn("Work center selector not initialized");
+      return;
+    }
 
-            this.resourceManager.addOperationToWorkCenter(result.workCenter, {
-              ...operation,
-              priority: result.priority,
-            });
-          }
+    const operations = Array.from(this.scheduledOperations.values());
+    const selections =
+      await this.workCenterSelector.selectWorkCentersForOperations(operations);
+
+    // Apply selections
+    this.scheduledOperations = applyWorkCenterSelections(
+      this.scheduledOperations,
+      selections
+    );
+
+    // Track affected work centers
+    for (const selection of selections.values()) {
+      if (selection.workCenterId) {
+        this.affectedWorkCenters.add(selection.workCenterId);
+      }
+    }
+  }
+
+  /**
+   * Calculate priorities for all operations grouped by work center
+   */
+  async calculatePriorities(): Promise<void> {
+    // Get all operations at affected work centers (not just from this job)
+    const workCenterIds = Array.from(this.affectedWorkCenters);
+
+    if (workCenterIds.length === 0) {
+      // No work centers affected, just use job-level priorities
+      const opsWithInfo: OperationWithJobInfo[] = [];
+      for (const op of this.scheduledOperations.values()) {
+        opsWithInfo.push(
+          toOperationWithJobInfo(
+            op,
+            this.job?.priority ?? null,
+            this.job?.deadlineType ?? null
+          )
+        );
+      }
+
+      const priorities = calculatePrioritiesByWorkCenter(opsWithInfo);
+      this.scheduledOperations = applyPriorities(
+        this.scheduledOperations,
+        priorities
+      );
+      return;
+    }
+
+    // Get all active operations at affected work centers from OTHER jobs
+    // (current job's operations aren't in DB yet with their new work centers)
+    const allWcOps = await this.db
+      .selectFrom("jobOperation as jo")
+      .innerJoin("job as j", "j.id", "jo.jobId")
+      .select([
+        "jo.id",
+        "jo.dueDate",
+        "jo.startDate",
+        "jo.priority",
+        "j.deadlineType",
+        "j.priority as jobPriority",
+        "jo.workCenterId",
+      ])
+      .where("jo.workCenterId", "in", workCenterIds)
+      .where("jo.status", "not in", ["Done", "Canceled"])
+      .execute();
+
+    // Build a set of operation IDs from the database query
+    const dbOpIds = new Set(allWcOps.map((op) => op.id).filter(Boolean));
+
+    // Start with operations from DB (other jobs at same work centers)
+    const mergedOps: OperationWithJobInfo[] = allWcOps
+      .filter((wcOp) => wcOp.id)
+      .map((wcOp) => {
+        const scheduled = this.scheduledOperations.get(wcOp.id!);
+        if (scheduled) {
+          // This is an operation from current job that was already in DB
+          // (reschedule case) - use the newly calculated dates
+          return {
+            id: scheduled.id,
+            dueDate: scheduled.dueDate ?? null,
+            startDate: scheduled.startDate ?? null,
+            priority: scheduled.priority,
+            deadlineType: wcOp.deadlineType ?? "No Deadline",
+            jobPriority: wcOp.jobPriority ?? 99,
+            workCenterId: scheduled.workCenterId ?? null,
+          };
         }
+        // Operation from another job - use DB data
+        return {
+          id: wcOp.id!,
+          dueDate: wcOp.dueDate ?? null,
+          startDate: wcOp.startDate ?? null,
+          priority: wcOp.priority ?? 1,
+          deadlineType: wcOp.deadlineType ?? "No Deadline",
+          jobPriority: wcOp.jobPriority ?? 99,
+          workCenterId: wcOp.workCenterId ?? null,
+        };
+      });
 
-        await this.db.transaction().execute(async (trx) => {
-          for await (const [id, { workCenterId, priority }] of Object.entries(
-            workCenterUpdates
-          )) {
-            await trx
-              .updateTable("jobOperation")
-              .set({
-                workCenterId,
-                priority,
-              })
-              .where("id", "=", id)
-              .execute();
-          }
-
-          trx
-            .updateTable("job")
-            .set({
-              status: "Ready",
-            })
-            .where("id", "=", this.jobId)
-            .execute();
+    // Add current job's scheduled operations that aren't in DB yet
+    // (their workCenterId was just assigned in memory)
+    for (const op of this.scheduledOperations.values()) {
+      if (!dbOpIds.has(op.id) && op.workCenterId) {
+        mergedOps.push({
+          id: op.id,
+          dueDate: op.dueDate ?? null,
+          startDate: op.startDate ?? null,
+          priority: op.priority,
+          deadlineType: op.deadlineType ?? this.job?.deadlineType ?? "No Deadline",
+          jobPriority: this.job?.priority ?? 99,
+          workCenterId: op.workCenterId,
         });
-        break;
       }
-      default: {
-        throw new Error(`Unsupported scheduling strategy: ${strategy}`);
+    }
+
+    // Calculate priorities
+    const priorities = calculatePrioritiesByWorkCenter(mergedOps);
+
+    // Apply to our scheduled operations
+    this.scheduledOperations = applyPriorities(
+      this.scheduledOperations,
+      priorities
+    );
+  }
+
+  /**
+   * Assign materials to operations (initial scheduling only)
+   */
+  async assignMaterials(): Promise<void> {
+    if (this.mode !== "initial") {
+      return;
+    }
+
+    // Build assembly tree
+    const assemblyTree = await this.assemblyHandler.buildAssemblyTree(
+      this.jobId
+    );
+    if (!assemblyTree) {
+      return;
+    }
+
+    // Get all jobMakeMethodIds
+    const makeMethodIds =
+      this.assemblyHandler.getAllJobMakeMethodIds(assemblyTree);
+
+    // Get materials that need assignment
+    const materials = await this.db
+      .selectFrom("jobMaterial")
+      .select(["id", "jobMakeMethodId"])
+      .where("jobMakeMethodId", "in", makeMethodIds)
+      .where("methodType", "=", "Make")
+      .where("jobOperationId", "is", null)
+      .execute();
+
+    // Group operations by jobMakeMethodId
+    const operationsByMethod = new Map<string, BaseOperation[]>();
+    for (const op of this.operations) {
+      if (op.jobMakeMethodId) {
+        if (!operationsByMethod.has(op.jobMakeMethodId)) {
+          operationsByMethod.set(op.jobMakeMethodId, []);
+        }
+        operationsByMethod.get(op.jobMakeMethodId)!.push(op);
+      }
+    }
+
+    // Assign first operation of each method to its materials
+    for (const material of materials) {
+      if (!material.jobMakeMethodId) continue;
+
+      const methodOps = operationsByMethod.get(material.jobMakeMethodId) ?? [];
+      const sortedOps = [...methodOps].sort(
+        (a, b) => (a.order ?? 0) - (b.order ?? 0)
+      );
+      const firstOp = sortedOps[0];
+
+      if (firstOp?.id) {
+        await this.db
+          .updateTable("jobMaterial")
+          .set({ jobOperationId: firstOp.id })
+          .where("id", "=", material.id)
+          .execute();
       }
     }
   }
 
-  async getOperationsAndMaterialsToSchedule() {
-    if (!this.db) {
-      throw new Error("Database connection is not initialized");
-    }
-    const [jobMakeMethod, operations] = await Promise.all([
-      this.db
-        .selectFrom("jobMakeMethod")
-        .select(["id"])
-        .where("jobId", "=", this.jobId)
-        .where("parentMaterialId", "is", null)
-        .executeTakeFirst(),
-      this.db
-        .selectFrom("jobOperation")
-        .selectAll()
-        .where("jobId", "=", this.jobId)
-        .where("status", "not in", ["Done", "Canceled"])
-        .orderBy("order")
-        .execute(),
-    ]);
-
-    const operationsByJobMakeMethodId = operations.reduce<
-      Record<string, BaseOperation[]>
-    >((acc, operation) => {
-      if (!operation.jobMakeMethodId) return acc;
-      if (!acc[operation.jobMakeMethodId]) {
-        acc[operation.jobMakeMethodId] = [];
-      }
-      acc[operation.jobMakeMethodId].push(operation);
-      return acc;
-    }, {});
-
-    this.operationsByJobMakeMethodId = operationsByJobMakeMethodId;
-
-    if (!jobMakeMethod?.id) {
-      throw new Error("Job make method not found");
-    }
-    const jobMethodTrees = await getJobMethodTree(
-      this.client,
-      jobMakeMethod.id
-    );
-    if (jobMethodTrees.error) {
-      throw new Error("Job method tree not found");
+  /**
+   * Persist all changes to the database
+   */
+  async persistChanges(): Promise<void> {
+    for (const op of this.scheduledOperations.values()) {
+      await this.db
+        .updateTable("jobOperation")
+        .set({
+          startDate: op.startDate,
+          dueDate: op.dueDate,
+          priority: op.priority ?? undefined,
+          workCenterId: op.workCenterId,
+          hasConflict: op.hasConflict,
+          conflictReason: op.conflictReason,
+          updatedAt: new Date().toISOString(),
+          updatedBy: this.userId,
+        })
+        .where("id", "=", op.id)
+        .execute();
     }
 
-    const jobMethodTree = jobMethodTrees.data?.[0] as JobMethodTreeItem;
-    if (!jobMethodTree) throw new Error("Method tree not found");
+    // Update job status if initial scheduling
+    if (this.mode === "initial") {
+      await this.db
+        .updateTable("job")
+        .set({ status: "Ready" })
+        .where("id", "=", this.jobId)
+        .execute();
+    }
+  }
 
-    const operationsToSchedule: BaseOperation[] = [];
-    const queue: JobMethodTreeItem[] = [jobMethodTree];
-    const validMaterialIds: string[] = [];
-    const makeMethodDependencies: {
-      id: string;
-      parentId: string | null;
-    }[] = [];
+  /**
+   * Get the scheduling result
+   */
+  getResult(): SchedulingResult {
+    return {
+      success: true,
+      operationsScheduled: this.scheduledOperations.size,
+      conflictsDetected: this.conflictsDetected,
+      workCentersAffected: Array.from(this.affectedWorkCenters),
+      assemblyDepth: this.assemblyDepth,
+    };
+  }
 
-    while (queue.length > 0) {
-      const currentNode = queue.shift();
-      if (!currentNode) continue;
+  /**
+   * Run the full scheduling process
+   */
+  async run(): Promise<SchedulingResult> {
+    await this.initialize();
 
-      const operations =
-        operationsByJobMakeMethodId[currentNode.data.jobMaterialMakeMethodId] ||
-        [];
-      operationsToSchedule.unshift(...operations);
-
-      // Populate makeMethodDependencies
-      if (
-        currentNode.data.jobMakeMethodId !==
-        currentNode.data.jobMaterialMakeMethodId
-      ) {
-        // Check if this dependency already exists
-        const dependencyExists = makeMethodDependencies.some(
-          (dep) =>
-            dep.id === currentNode.data.jobMaterialMakeMethodId &&
-            dep.parentId === currentNode.data.jobMakeMethodId
-        );
-
-        if (!dependencyExists && currentNode.data.jobMaterialMakeMethodId) {
-          makeMethodDependencies.unshift({
-            id: currentNode.data.jobMaterialMakeMethodId,
-            parentId: currentNode.data.jobMakeMethodId,
-          });
-        }
-      } else {
-        const rootDependencyExists = makeMethodDependencies.some(
-          (dep) =>
-            dep.id === currentNode.data.jobMaterialMakeMethodId &&
-            dep.parentId === null
-        );
-
-        if (!rootDependencyExists && currentNode.data.jobMaterialMakeMethodId) {
-          makeMethodDependencies.unshift({
-            id: currentNode.data.jobMaterialMakeMethodId,
-            parentId: null,
-          });
-        }
-      }
-
-      if (!currentNode.data.isRoot && currentNode.data.methodMaterialId) {
-        validMaterialIds.push(currentNode.data.methodMaterialId);
-      }
-
-      queue.push(...currentNode.children);
+    if (this.mode === "initial") {
+      // Assign materials BEFORE creating dependencies
+      // Dependencies require jobMaterial.jobOperationId to be set
+      // to link subassembly operations to parent operations
+      await this.assignMaterials();
+      await this.createDependencies();
     }
 
-    this.operationsToSchedule = operationsToSchedule;
-    this.validMaterialIds = validMaterialIds;
-    this.makeMethodDependencies = makeMethodDependencies;
+    await this.calculateDates();
+    await this.selectWorkCenters();
+    await this.calculatePriorities();
+
+    await this.persistChanges();
+
+    return this.getResult();
   }
 }
-
-export { SchedulingEngine };

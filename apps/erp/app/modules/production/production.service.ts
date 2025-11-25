@@ -256,12 +256,13 @@ export async function convertSalesOrderLinesToJobs(
           },
         });
 
-        await serviceRole.functions.invoke("scheduler", {
+        await serviceRole.functions.invoke("schedule", {
           body: {
-            type: "dependencies",
-            id: createJob.data.id,
+            jobId: createJob.data.id,
             companyId,
             userId,
+            mode: "initial",
+            direction: "backward",
           },
         });
 
@@ -1499,18 +1500,25 @@ export async function getTrackedEntitiesByJobId(
     .eq("companyId", jobMakeMethod.data.companyId);
 }
 
+/**
+ * Reschedule a job using the unified scheduling engine.
+ * This recalculates dates, work centers, and priorities for all operations.
+ */
 export async function recalculateJobOperationDependencies(
   client: SupabaseClient<Database>,
   params: {
-    jobId: string; // job operation id
+    jobId: string;
     companyId: string;
     userId: string;
   }
 ) {
-  return client.functions.invoke("scheduler", {
+  return client.functions.invoke("schedule", {
     body: {
-      type: "dependencies",
-      ...params,
+      jobId: params.jobId,
+      companyId: params.companyId,
+      userId: params.userId,
+      mode: "reschedule",
+      direction: "backward",
     },
     region: FunctionRegion.UsEast1,
   });
@@ -2460,20 +2468,39 @@ export async function upsertDemandProjections(
   };
 }
 
+/**
+ * Trigger a job scheduling task via Trigger.dev.
+ * Supports both initial scheduling and rescheduling.
+ */
+export async function triggerJobSchedule(
+  jobId: string,
+  companyId: string,
+  userId: string,
+  mode: "initial" | "reschedule" = "reschedule",
+  direction: "backward" | "forward" = "backward"
+) {
+  const { scheduleJob } = await import(
+    "@carbon/jobs/trigger/reschedule-job"
+  );
+
+  const handle = await scheduleJob.trigger({
+    jobId,
+    companyId,
+    userId,
+    mode,
+    direction,
+  });
+
+  return { success: true, runId: handle.id };
+}
+
+/**
+ * @deprecated Use triggerJobSchedule with mode="reschedule" instead.
+ */
 export async function triggerJobReschedule(
   jobId: string,
   companyId: string,
   userId: string
 ) {
-  const { rescheduleJob } = await import(
-    "@carbon/jobs/trigger/reschedule-job"
-  );
-
-  const handle = await rescheduleJob.trigger({
-    jobId,
-    companyId,
-    userId,
-  });
-
-  return { success: true, runId: handle.id };
+  return triggerJobSchedule(jobId, companyId, userId, "reschedule", "backward");
 }

@@ -95,11 +95,13 @@ BEGIN
   LEFT JOIN "customer" c ON rj."customerId" = c.id
   LEFT JOIN "salesOrder" so ON rj."salesOrderId" = so.id
   LEFT JOIN "modelUpload" mu ON i."modelUploadId" = mu.id
-  WHERE CASE
-    WHEN array_length(work_center_ids, 1) > 0 THEN jo."workCenterId" = ANY(work_center_ids)
-    ELSE TRUE
+   WHERE CASE
+    WHEN array_length(work_center_ids, 1) > 0 THEN 
+      jo."workCenterId" = ANY(work_center_ids) AND jo."status" != 'Done' AND jo."status" != 'Canceled'
+    ELSE jo."status" != 'Done' AND jo."status" != 'Canceled'
   END
-  ORDER BY jo."priority";
+  ORDER BY jo."startDate", jo."priority";
+  
 END;
 $$ LANGUAGE plpgsql;
 

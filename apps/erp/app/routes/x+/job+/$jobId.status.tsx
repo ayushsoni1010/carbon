@@ -80,12 +80,13 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
       const serviceRole = getCarbonServiceRole();
       const [scheduler] = await Promise.all([
-        serviceRole.functions.invoke("scheduler", {
+        serviceRole.functions.invoke("schedule", {
           body: {
-            type: "schedule",
             jobId: id,
             companyId,
             userId,
+            mode: "initial",
+            direction: "backward",
           },
           region: FunctionRegion.UsEast1,
         }),

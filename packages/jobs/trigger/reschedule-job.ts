@@ -4,48 +4,62 @@ import { getCarbonServiceRole } from "@carbon/auth";
 
 const serviceRole = getCarbonServiceRole();
 
-const rescheduleJobSchema = z.object({
+const scheduleJobSchema = z.object({
   jobId: z.string(),
   companyId: z.string(),
   userId: z.string(),
+  mode: z.enum(["initial", "reschedule"]).default("reschedule"),
+  direction: z.enum(["backward", "forward"]).default("backward"),
 });
 
-export const rescheduleJob = task({
-  id: "reschedule-job",
+/**
+ * Unified scheduling task that handles both initial scheduling and rescheduling.
+ * Uses the new unified scheduling engine endpoint.
+ */
+export const scheduleJob = task({
+  id: "schedule-job",
   queue: {
     name: "scheduling",
     concurrencyLimit: 5,
   },
-  run: async (payload: z.infer<typeof rescheduleJobSchema>) => {
-    console.info(`🔰 Rescheduling job ${payload.jobId}`);
+  run: async (payload: z.infer<typeof scheduleJobSchema>) => {
+    const { jobId, companyId, userId, mode, direction } = payload;
+    console.info(
+      `🔰 ${mode === "initial" ? "Scheduling" : "Rescheduling"} job ${jobId}`
+    );
 
     try {
-      const { data, error } = await serviceRole.functions.invoke("reschedule", {
+      const { data, error } = await serviceRole.functions.invoke("schedule", {
         body: {
-          jobId: payload.jobId,
-          companyId: payload.companyId,
-          userId: payload.userId,
+          jobId,
+          companyId,
+          userId,
+          mode,
+          direction,
         },
       });
 
       if (error) {
-        throw new Error(error.message || "Failed to reschedule job");
+        throw new Error(error.message || `Failed to ${mode} schedule job`);
       }
 
       console.info(
-        `✅ Rescheduled: ${data.operationsUpdated} ops, ` +
-          `${data.workCentersAffected} WCs, ${data.conflictsDetected} conflicts`
+        `✅ ${mode === "initial" ? "Scheduled" : "Rescheduled"}: ` +
+          `${data.operationsScheduled} ops, ` +
+          `${data.workCentersAffected.length} WCs, ` +
+          `${data.conflictsDetected} conflicts`
       );
 
       return {
         success: true,
-        operationsUpdated: data.operationsUpdated,
+        operationsScheduled: data.operationsScheduled,
         conflictsDetected: data.conflictsDetected,
         workCentersAffected: data.workCentersAffected,
+        assemblyDepth: data.assemblyDepth,
       };
     } catch (error) {
       console.error(
-        `❌ Reschedule failed: ${
+        `❌ ${mode === "initial" ? "Scheduling" : "Rescheduling"} failed: ${
           error instanceof Error ? error.message : String(error)
         }`
       );
