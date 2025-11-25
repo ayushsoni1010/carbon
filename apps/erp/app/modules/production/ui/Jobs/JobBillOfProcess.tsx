@@ -1996,14 +1996,17 @@ function OperationForm({
   const baseCurrency = company?.baseCurrencyCode ?? "USD";
 
   useEffect(() => {
-    if (fetcher.data && fetcher.data.id) {
+    if (fetcher.data?.id) {
       // Clear temporary item after successful save
       setTemporaryItems((prev) => {
         const { [item.id]: _, ...rest } = prev;
         return rest;
       });
+
+      // Close form on submit
+      setSelectedItemId(null);
     }
-  }, [item.id, fetcher.data, setTemporaryItems]);
+  }, [item.id, fetcher.data, setSelectedItemId, setTemporaryItems]);
 
   const machineDisclosure = useDisclosure();
   const laborDisclosure = useDisclosure();
