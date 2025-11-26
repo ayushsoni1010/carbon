@@ -262,11 +262,7 @@ export function JobCard({ item, isOverlay, progressByItemId }: JobCardProps) {
             <HStack>
               <ProgressComponent
                 indicatorClassName={
-                  status === "Paused"
-                    ? "bg-yellow-500"
-                    : status === "Completed"
-                    ? "bg-green-500"
-                    : ""
+                  status === "Completed" ? "bg-emerald-500" : "bg-blue-500"
                 }
                 value={Math.min((item.progress ?? 0) * 100, 100)}
               />
