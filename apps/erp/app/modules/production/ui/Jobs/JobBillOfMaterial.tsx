@@ -618,7 +618,11 @@ function MaterialForm({
   }>(path.to.job(jobId));
 
   const { carbon } = useCarbon();
-  const methodMaterialFetcher = useFetcher<{ id: string }>();
+  const methodMaterialFetcher = useFetcher<{
+    id: string;
+    success: boolean;
+    message: string;
+  }>();
   const params = useParams();
   const { company } = useUser();
 
@@ -633,6 +637,10 @@ function MaterialForm({
         return rest;
       });
       setSelectedItemId(null);
+
+      if (methodMaterialFetcher.data?.success) {
+        toast.success(methodMaterialFetcher.data.message);
+      }
     }
   }, [
     item.id,
@@ -1014,7 +1022,12 @@ function MaterialForm({
             <div />
           )}
 
-          <Submit isDisabled={isDisabled}>Save</Submit>
+          <Submit
+            isDisabled={isDisabled || methodMaterialFetcher.state !== "idle"}
+            isLoading={methodMaterialFetcher.state === "submitting"}
+          >
+            Save
+          </Submit>
         </motion.div>
       </motion.div>
     </ValidatedForm>

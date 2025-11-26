@@ -863,7 +863,11 @@ function OperationForm({
   setWorkInstructions,
   setTemporaryItems,
 }: OperationFormProps) {
-  const methodOperationFetcher = useFetcher<{ id: string }>();
+  const methodOperationFetcher = useFetcher<{
+    id: string;
+    success: boolean;
+    message: string;
+  }>();
   const { company } = useUser();
   const { carbon } = useCarbon();
 
@@ -878,6 +882,10 @@ function OperationForm({
         return rest;
       });
       setSelectedItemId(null);
+
+      if (methodOperationFetcher.data.success) {
+        toast.success(methodOperationFetcher.data.message);
+      }
     }
   }, [
     item.id,
@@ -1640,7 +1648,12 @@ function OperationForm({
         }}
       >
         <motion.div layout className="ml-auto mr-1 pt-2">
-          <Submit isDisabled={isReadOnly}>Save</Submit>
+          <Submit
+            isDisabled={isReadOnly || methodOperationFetcher.state !== "idle"}
+            isLoading={methodOperationFetcher.state === "submitting"}
+          >
+            Save
+          </Submit>
         </motion.div>
       </motion.div>
     </ValidatedForm>

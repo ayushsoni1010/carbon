@@ -571,7 +571,11 @@ function MaterialForm({
   onConfigure: (configuration: Configuration) => void;
 }) {
   const { carbon } = useCarbon();
-  const methodMaterialFetcher = useFetcher<{ id: string }>();
+  const methodMaterialFetcher = useFetcher<{
+    id: string;
+    success: boolean;
+    message: string;
+  }>();
   const params = useParams();
   const { company, defaults } = useUser();
   const [locationId, setLocationId] = useState<string | undefined>(
@@ -602,6 +606,10 @@ function MaterialForm({
         return rest;
       });
       setSelectedItemId(null);
+
+      if (methodMaterialFetcher.data.success) {
+        toast.success(methodMaterialFetcher.data.message);
+      }
     }
   }, [
     item.id,
@@ -1002,7 +1010,12 @@ function MaterialForm({
           )}
 
           <div className="flex items-center gap-2">
-            <Submit isDisabled={isReadOnly}>Save</Submit>
+            <Submit
+              isDisabled={isReadOnly || methodMaterialFetcher.state !== "idle"}
+              isLoading={methodMaterialFetcher.state === "submitting"}
+            >
+              Save
+            </Submit>
           </div>
         </motion.div>
       </motion.div>

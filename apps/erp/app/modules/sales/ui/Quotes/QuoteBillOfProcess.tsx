@@ -1653,7 +1653,11 @@ function OperationForm({
   if (!quoteId) throw new Error("quoteId not found");
   if (!lineId) throw new Error("lineId not found");
 
-  const fetcher = useFetcher<{ id: string }>();
+  const fetcher = useFetcher<{
+    id: string;
+    success: boolean;
+    message: string;
+  }>();
   const { carbon } = useCarbon();
 
   const baseCurrency = company?.baseCurrencyCode ?? "USD";
@@ -1666,6 +1670,10 @@ function OperationForm({
         return rest;
       });
       setSelectedItemId(null);
+
+      if (fetcher.data?.success) {
+        toast.success(fetcher.data.message);
+      }
     }
   }, [item.id, fetcher.data, setTemporaryItems, setSelectedItemId]);
 
@@ -2352,7 +2360,12 @@ function OperationForm({
         }}
       >
         <motion.div layout className="ml-auto mr-1 pt-2">
-          <Submit isDisabled={isDisabled}>Save</Submit>
+          <Submit
+            isDisabled={isDisabled || fetcher.state !== "idle"}
+            isLoading={fetcher.state === "submitting"}
+          >
+            Save
+          </Submit>
         </motion.div>
       </motion.div>
     </ValidatedForm>

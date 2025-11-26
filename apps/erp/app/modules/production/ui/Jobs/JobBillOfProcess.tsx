@@ -1991,7 +1991,11 @@ function OperationForm({
   const { company } = useUser();
   if (!jobId) throw new Error("jobId not found");
 
-  const fetcher = useFetcher<{ id: string }>();
+  const fetcher = useFetcher<{
+    id: string;
+    success: boolean;
+    message: string;
+  }>();
   const { carbon } = useCarbon();
   const baseCurrency = company?.baseCurrencyCode ?? "USD";
 
@@ -2005,6 +2009,10 @@ function OperationForm({
 
       // Close form on submit
       setSelectedItemId(null);
+
+      if (fetcher.data?.success) {
+        toast.success(fetcher.data.message);
+      }
     }
   }, [item.id, fetcher.data, setSelectedItemId, setTemporaryItems]);
 
