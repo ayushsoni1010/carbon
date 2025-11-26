@@ -157,6 +157,25 @@ export async function loader({ request }: LoaderFunctionArgs) {
     getTagsList(client, companyId, "job"),
   ]);
 
+  if (jobs.error) {
+    console.error(jobs.error);
+    throw redirect(
+      path.to.scheduleOperation,
+      await flash(request, error(jobs.error, "Failed to fetch jobs"))
+    );
+  }
+
+  if (unscheduledJobs.error) {
+    console.error(unscheduledJobs.error);
+    throw redirect(
+      path.to.scheduleOperation,
+      await flash(
+        request,
+        error(unscheduledJobs.error, "Failed to fetch unscheduled jobs")
+      )
+    );
+  }
+
   // Filter jobs
   let filteredJobs = jobs.data ?? [];
   let filteredUnscheduledJobs = unscheduledJobs.data ?? [];
@@ -317,10 +336,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
         const weekStart = startOfWeek(currentDate, "en-GB"); // en-GB uses Monday as first day
         const weekEnd = endOfWeek(currentDate, "en-GB");
 
-        if (
-          dueDate.compare(weekStart) >= 0 &&
-          dueDate.compare(weekEnd) <= 0
-        ) {
+        if (dueDate.compare(weekStart) >= 0 && dueDate.compare(weekEnd) <= 0) {
           columnId = dueDate.toString();
         }
       } else {
