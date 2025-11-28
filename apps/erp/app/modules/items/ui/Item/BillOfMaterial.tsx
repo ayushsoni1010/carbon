@@ -36,7 +36,7 @@ import {
 import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
 import { nanoid } from "nanoid";
 import type { Dispatch, SetStateAction } from "react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import {
   LuArrowLeft,
@@ -154,6 +154,8 @@ const BillOfMaterial = ({
   const isReadOnly =
     permissions.can("update", "parts") === false ||
     makeMethod.status !== "Draft";
+
+  const addItemButtonRef = useRef<HTMLButtonElement>(null);
 
   const [items] = useItems();
   const fetcher = useFetcher<{}>();
@@ -442,6 +444,14 @@ const BillOfMaterial = ({
                             setOrderState={setOrderState}
                             setSelectedItemId={setSelectedItemId}
                             setTemporaryItems={setTemporaryItems}
+                            onSubmit={() => {
+                              setSelectedItemId(null);
+                              addItemButtonRef.current?.scrollIntoView({
+                                behavior: "smooth",
+                                block: "nearest",
+                                inline: "center",
+                              });
+                            }}
                           />
                         </motion.div>
                       </motion.div>
@@ -484,6 +494,7 @@ const BillOfMaterial = ({
         <CardAction>
           <div className="flex items-center gap-2">
             <Button
+              ref={addItemButtonRef}
               variant="secondary"
               isDisabled={isReadOnly}
               onClick={onAddItem}
@@ -557,6 +568,7 @@ function MaterialForm({
   setOrderState,
   setSelectedItemId,
   setTemporaryItems,
+  onSubmit,
 }: {
   configurable: boolean;
   isReadOnly: boolean;
@@ -569,6 +581,7 @@ function MaterialForm({
   setTemporaryItems: Dispatch<SetStateAction<TemporaryItems>>;
   setOrderState: Dispatch<SetStateAction<OrderState>>;
   onConfigure: (configuration: Configuration) => void;
+  onSubmit: () => void;
 }) {
   const { carbon } = useCarbon();
   const methodMaterialFetcher = useFetcher<{
@@ -605,18 +618,13 @@ function MaterialForm({
         const { [item.id]: _, ...rest } = prev;
         return rest;
       });
-      setSelectedItemId(null);
 
       if (methodMaterialFetcher.data.success) {
         toast.success(methodMaterialFetcher.data.message);
       }
+      onSubmit();
     }
-  }, [
-    item.id,
-    methodMaterialFetcher.data,
-    setTemporaryItems,
-    setSelectedItemId,
-  ]);
+  }, [item.id, methodMaterialFetcher.data, setTemporaryItems, onSubmit]);
 
   const [itemType, setItemType] = useState<MethodItemType>(item.data.itemType);
   const [itemData, setItemData] = useState<{

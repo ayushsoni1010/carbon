@@ -31,7 +31,7 @@ import { Link, useFetcher, useFetchers, useParams } from "@remix-run/react";
 import { AnimatePresence, LayoutGroup, motion } from "framer-motion";
 import { nanoid } from "nanoid";
 import type { Dispatch, SetStateAction } from "react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   LuArrowLeft,
   LuChevronDown,
@@ -248,6 +248,8 @@ const JobBillOfMaterial = ({
 
   const fetcher = useFetcher<{}>();
   const permissions = usePermissions();
+
+  const addItemButtonRef = useRef<HTMLButtonElement>(null);
 
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [temporaryItems, setTemporaryItems] = useState<TemporaryItems>({});
@@ -543,6 +545,14 @@ const JobBillOfMaterial = ({
                             setTemporaryItems={setTemporaryItems}
                             orderState={orderState}
                             setOrderState={setOrderState}
+                            onSubmit={() => {
+                              setSelectedItemId(null);
+                              addItemButtonRef.current?.scrollIntoView({
+                                behavior: "smooth",
+                                block: "nearest",
+                                inline: "center",
+                              });
+                            }}
                           />
                         </motion.div>
                       </motion.div>
@@ -566,6 +576,7 @@ const JobBillOfMaterial = ({
 
         <CardAction>
           <Button
+            ref={addItemButtonRef}
             variant="secondary"
             isDisabled={isDisabled || !permissions.can("update", "production")}
             onClick={onAddItem}
@@ -599,6 +610,7 @@ function MaterialForm({
   setSelectedItemId,
   setTemporaryItems,
   setOrderState,
+  onSubmit,
 }: {
   item: ItemWithData;
   isDisabled: boolean;
@@ -609,6 +621,7 @@ function MaterialForm({
   setTemporaryItems: Dispatch<SetStateAction<TemporaryItems>>;
   setSelectedItemId: Dispatch<SetStateAction<string | null>>;
   setOrderState: Dispatch<SetStateAction<OrderState>>;
+  onSubmit: () => void;
 }) {
   const { jobId } = useParams();
   if (!jobId) throw new Error("jobId not found");
@@ -636,18 +649,13 @@ function MaterialForm({
         const { [item.id]: _, ...rest } = prev;
         return rest;
       });
-      setSelectedItemId(null);
 
       if (methodMaterialFetcher.data?.success) {
         toast.success(methodMaterialFetcher.data.message);
       }
+      onSubmit();
     }
-  }, [
-    item.id,
-    methodMaterialFetcher.data,
-    setTemporaryItems,
-    setSelectedItemId,
-  ]);
+  }, [item.id, methodMaterialFetcher.data, setTemporaryItems, onSubmit]);
 
   const [itemType, setItemType] = useState<MethodItemType>(item.data.itemType);
   const [itemData, setItemData] = useState<{

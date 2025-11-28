@@ -278,6 +278,8 @@ const QuoteBillOfProcess = ({
     company: { id: companyId },
   } = useUser();
 
+  const addOperationButtonRef = useRef<HTMLButtonElement>(null);
+
   const { quoteId } = useParams();
   if (!quoteId) throw new Error("quoteId not found");
   const quoteData = useRouteData<{ quote: Quotation }>(path.to.quote(quoteId));
@@ -526,6 +528,14 @@ const QuoteBillOfProcess = ({
                 setSelectedItemId={setSelectedItemId}
                 setTemporaryItems={setTemporaryItems}
                 temporaryItems={temporaryItems}
+                onSubmit={() => {
+                  setSelectedItemId(null);
+                  addOperationButtonRef.current?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "nearest",
+                    inline: "center",
+                  });
+                }}
               />
             </motion.div>
           </div>
@@ -797,6 +807,7 @@ const QuoteBillOfProcess = ({
 
         <CardAction>
           <Button
+            ref={addOperationButtonRef}
             variant="secondary"
             isDisabled={
               !permissions.can("update", "sales") ||
@@ -1639,6 +1650,7 @@ function OperationForm({
   setTemporaryItems,
   setSelectedItemId,
   temporaryItems,
+  onSubmit,
 }: {
   item: ItemWithData;
   isDisabled: boolean;
@@ -1647,6 +1659,7 @@ function OperationForm({
   setTemporaryItems: Dispatch<SetStateAction<TemporaryItems>>;
   setSelectedItemId: Dispatch<SetStateAction<string | null>>;
   temporaryItems: TemporaryItems;
+  onSubmit: () => void;
 }) {
   const { quoteId, lineId } = useParams();
   const { company } = useUser();
@@ -1669,13 +1682,13 @@ function OperationForm({
         const { [item.id]: _, ...rest } = prev;
         return rest;
       });
-      setSelectedItemId(null);
 
       if (fetcher.data?.success) {
         toast.success(fetcher.data.message);
       }
+      onSubmit();
     }
-  }, [item.id, fetcher.data, setTemporaryItems, setSelectedItemId]);
+  }, [item.id, fetcher.data, setTemporaryItems, onSubmit]);
 
   const machineDisclosure = useDisclosure();
   const laborDisclosure = useDisclosure();

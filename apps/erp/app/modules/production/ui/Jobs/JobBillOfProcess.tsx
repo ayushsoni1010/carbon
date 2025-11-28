@@ -598,6 +598,7 @@ const JobBillOfProcess = ({
   const [isLoading, setIsLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const channelRef = useRef<RealtimeChannel | null>(null);
+  const addOperationButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (
@@ -749,6 +750,14 @@ const JobBillOfProcess = ({
                 setTemporaryItems={setTemporaryItems}
                 setSelectedItemId={setSelectedItemId}
                 temporaryItems={temporaryItems}
+                onSubmit={() => {
+                  setSelectedItemId(null);
+                  addOperationButtonRef.current?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "nearest",
+                    inline: "center",
+                  });
+                }}
               />
             </motion.div>
           </div>
@@ -1003,6 +1012,7 @@ const JobBillOfProcess = ({
 
         <CardAction>
           <Button
+            ref={addOperationButtonRef}
             variant="secondary"
             isDisabled={
               !permissions.can("update", "production") ||
@@ -1976,6 +1986,7 @@ function OperationForm({
   setTemporaryItems,
   setSelectedItemId,
   temporaryItems,
+  onSubmit,
 }: {
   item: ItemWithData;
   isDisabled: boolean;
@@ -1985,6 +1996,7 @@ function OperationForm({
   setWorkInstructions: Dispatch<SetStateAction<PendingWorkInstructions>>;
   setTemporaryItems: Dispatch<SetStateAction<TemporaryItems>>;
   setSelectedItemId: Dispatch<SetStateAction<string | null>>;
+  onSubmit: () => void;
   temporaryItems: TemporaryItems;
 }) {
   const { jobId } = useParams();
@@ -2006,15 +2018,12 @@ function OperationForm({
         const { [item.id]: _, ...rest } = prev;
         return rest;
       });
-
-      // Close form on submit
-      setSelectedItemId(null);
-
       if (fetcher.data?.success) {
         toast.success(fetcher.data.message);
       }
+      onSubmit();
     }
-  }, [item.id, fetcher.data, setSelectedItemId, setTemporaryItems]);
+  }, [item.id, fetcher.data, onSubmit, setTemporaryItems]);
 
   const machineDisclosure = useDisclosure();
   const laborDisclosure = useDisclosure();

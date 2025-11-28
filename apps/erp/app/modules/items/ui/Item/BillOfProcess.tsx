@@ -212,6 +212,8 @@ const BillOfProcess = ({
   const deleteOperationFetcher = useFetcher<{ success: boolean }>();
   const { id: userId } = useUser();
 
+  const addOperationButtonRef = useRef<HTMLButtonElement>(null);
+
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [temporaryItems, setTemporaryItems] = useState<TemporaryItems>({});
   const [workInstructions, setWorkInstructions] =
@@ -475,6 +477,14 @@ const BillOfProcess = ({
                 setSelectedItemId={setSelectedItemId}
                 setTemporaryItems={setTemporaryItems}
                 setWorkInstructions={setWorkInstructions}
+                onSubmit={() => {
+                  setSelectedItemId(null);
+                  addOperationButtonRef.current?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "nearest",
+                    inline: "center",
+                  });
+                }}
               />
             </motion.div>
           </div>
@@ -779,6 +789,7 @@ const BillOfProcess = ({
         <CardAction>
           <div className="flex items-center gap-2">
             <Button
+              ref={addOperationButtonRef}
               variant="secondary"
               isDisabled={isReadOnly || selectedItemId !== null}
               onClick={onAddItem}
@@ -849,6 +860,7 @@ type OperationFormProps = {
   setSelectedItemId: Dispatch<SetStateAction<string | null>>;
   setTemporaryItems: Dispatch<SetStateAction<TemporaryItems>>;
   setWorkInstructions: Dispatch<SetStateAction<PendingWorkInstructions>>;
+  onSubmit: () => void;
 };
 
 function OperationForm({
@@ -862,6 +874,7 @@ function OperationForm({
   setSelectedItemId,
   setWorkInstructions,
   setTemporaryItems,
+  onSubmit,
 }: OperationFormProps) {
   const methodOperationFetcher = useFetcher<{
     id: string;
@@ -881,18 +894,13 @@ function OperationForm({
         const { [item.id]: _, ...rest } = prev;
         return rest;
       });
-      setSelectedItemId(null);
 
       if (methodOperationFetcher.data.success) {
         toast.success(methodOperationFetcher.data.message);
       }
+      onSubmit();
     }
-  }, [
-    item.id,
-    methodOperationFetcher.data,
-    setTemporaryItems,
-    setSelectedItemId,
-  ]);
+  }, [item.id, methodOperationFetcher.data, setTemporaryItems, onSubmit]);
 
   const machineDisclosure = useDisclosure();
   const laborDisclosure = useDisclosure();
