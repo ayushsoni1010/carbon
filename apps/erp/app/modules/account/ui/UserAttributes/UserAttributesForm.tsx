@@ -171,7 +171,9 @@ function TypedForm(
               <Hidden name="type" value="boolean" />
               <Hidden name="userAttributeId" />
               <Hidden name="userAttributeValueId" />
-              <BooleanInput name="value" />
+              <div>
+                <BooleanInput name="value" />
+              </div>
             </div>
             <HStack className="justify-end w-full self-center">
               <Submit type="submit">Save</Submit>
@@ -455,7 +457,9 @@ function TypedDisplay(
           {displayValue === "N/A" ? (
             <p className="self-center">{displayValue}</p>
           ) : (
-            <Switch disabled checked={displayValue === true} />
+            <div>
+              <Switch disabled checked={displayValue === true} />
+            </div>
           )}
           <HStack className="justify-end w-full self-center">
             <Button
