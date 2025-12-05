@@ -345,13 +345,9 @@ const LinePricing = ({
       ? pricingOptions.map((opt) => opt.quantity)
       : [1]; // Default to showing at least one row with quantity 1
 
-  const isDisabled = [
-    "Ordered",
-    "Partial",
-    "Expired",
-    "Cancelled",
-    "Declined",
-  ].includes(quoteStatus || "");
+  const isDisabled = ["Expired", "Cancelled", "Declined"].includes(
+    quoteStatus || ""
+  );
 
   const formatter = new Intl.NumberFormat(locale, {
     style: "currency",
@@ -553,95 +549,106 @@ const LinePricing = ({
                   </label>
                 </Td>
                 <Td className=" bg-muted/30">{qty}</Td>
-                <Td className="">
-                  <NumberField
-                    value={unitPrice}
-                    formatOptions={{
-                      style: "currency",
-                      currency: currencyCode,
-                    }}
-                    isDisabled={isDisabled || !isSelected}
-                    minValue={0}
-                    onChange={(value) => {
-                      if (Number.isFinite(value) && value !== unitPrice) {
-                        updatePricing(qty, "supplierUnitPrice", value);
-                      }
-                    }}
-                  >
-                    <NumberInput
-                      className="border-0 -ml-3 shadow-none disabled:bg-transparent disabled:opacity-100"
-                      size="sm"
-                      min={0}
-                    />
-                  </NumberField>
-                </Td>
-                <Td className="w-[150px]">
-                  <NumberField
-                    value={leadTime}
-                    formatOptions={{
-                      style: "unit",
-                      unit: "day",
-                      unitDisplay: "long",
-                    }}
-                    minValue={0}
-                    isDisabled={isDisabled || !isSelected}
-                    onChange={(value) => {
-                      if (Number.isFinite(value) && value !== leadTime) {
-                        updatePricing(qty, "leadTime", value);
-                      }
-                    }}
-                  >
-                    <NumberInput
-                      className="border-0 -ml-3 shadow-none disabled:bg-transparent disabled:opacity-100"
-                      size="sm"
-                      min={0}
-                    />
-                  </NumberField>
-                </Td>
-                <Td className="w-[150px]">
-                  <NumberField
-                    value={shippingCost}
-                    formatOptions={{
-                      style: "currency",
-                      currency: currencyCode,
-                    }}
-                    isDisabled={isDisabled || !isSelected}
-                    minValue={0}
-                    onChange={(value) => {
-                      if (Number.isFinite(value) && value !== shippingCost) {
-                        updatePricing(qty, "supplierShippingCost", value);
-                      }
-                    }}
-                  >
-                    <NumberInput
-                      className="border-0 -ml-3 shadow-none disabled:bg-transparent disabled:opacity-100"
-                      size="sm"
-                      min={0}
-                    />
-                  </NumberField>
-                </Td>
-                <Td className="w-[120px]">
-                  <NumberField
-                    value={taxAmount}
-                    formatOptions={{
-                      style: "currency",
-                      currency: currencyCode,
-                    }}
-                    isDisabled={isDisabled || !isSelected}
-                    minValue={0}
-                    onChange={(value) => {
-                      if (Number.isFinite(value) && value !== taxAmount) {
-                        updatePricing(qty, "supplierTaxAmount", value);
-                      }
-                    }}
-                  >
-                    <NumberInput
-                      className="border-0 -ml-3 shadow-none disabled:bg-transparent disabled:opacity-100"
-                      size="sm"
-                      min={0}
-                    />
-                  </NumberField>
-                </Td>
+                {isSelected ? (
+                  <>
+                    <Td className="">
+                      <NumberField
+                        value={unitPrice}
+                        formatOptions={{
+                          style: "currency",
+                          currency: currencyCode,
+                        }}
+                        isDisabled={isDisabled || !isSelected}
+                        minValue={0}
+                        onChange={(value) => {
+                          if (Number.isFinite(value) && value !== unitPrice) {
+                            updatePricing(qty, "supplierUnitPrice", value);
+                          }
+                        }}
+                      >
+                        <NumberInput
+                          className="border-0 -ml-3 shadow-none disabled:bg-transparent disabled:opacity-100"
+                          size="sm"
+                          min={0}
+                        />
+                      </NumberField>
+                    </Td>
+                    <Td className="w-[150px]">
+                      <NumberField
+                        value={leadTime}
+                        formatOptions={{
+                          style: "unit",
+                          unit: "day",
+                          unitDisplay: "long",
+                        }}
+                        minValue={0}
+                        isDisabled={isDisabled || !isSelected}
+                        onChange={(value) => {
+                          if (Number.isFinite(value) && value !== leadTime) {
+                            updatePricing(qty, "leadTime", value);
+                          }
+                        }}
+                      >
+                        <NumberInput
+                          className="border-0 -ml-3 shadow-none disabled:bg-transparent disabled:opacity-100"
+                          size="sm"
+                          min={0}
+                        />
+                      </NumberField>
+                    </Td>
+                    <Td className="w-[150px]">
+                      <NumberField
+                        value={shippingCost}
+                        formatOptions={{
+                          style: "currency",
+                          currency: currencyCode,
+                        }}
+                        isDisabled={isDisabled || !isSelected}
+                        minValue={0}
+                        onChange={(value) => {
+                          if (
+                            Number.isFinite(value) &&
+                            value !== shippingCost
+                          ) {
+                            updatePricing(qty, "supplierShippingCost", value);
+                          }
+                        }}
+                      >
+                        <NumberInput
+                          className="border-0 -ml-3 shadow-none disabled:bg-transparent disabled:opacity-100"
+                          size="sm"
+                          min={0}
+                        />
+                      </NumberField>
+                    </Td>
+                    <Td className="w-[120px]">
+                      <NumberField
+                        value={taxAmount}
+                        formatOptions={{
+                          style: "currency",
+                          currency: currencyCode,
+                        }}
+                        isDisabled={isDisabled || !isSelected}
+                        minValue={0}
+                        onChange={(value) => {
+                          if (Number.isFinite(value) && value !== taxAmount) {
+                            updatePricing(qty, "supplierTaxAmount", value);
+                          }
+                        }}
+                      >
+                        <NumberInput
+                          className="border-0 -ml-3 shadow-none disabled:bg-transparent disabled:opacity-100"
+                          size="sm"
+                          min={0}
+                        />
+                      </NumberField>
+                    </Td>
+                  </>
+                ) : (
+                  <Td colSpan={4} className="text-muted-foreground">
+                    Select to provide pricing
+                  </Td>
+                )}
                 <Td className="w-[150px] bg-muted/30">
                   {isSelected && total > 0 ? formatter.format(total) : "—"}
                 </Td>

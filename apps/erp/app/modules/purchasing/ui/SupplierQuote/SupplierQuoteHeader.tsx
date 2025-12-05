@@ -88,44 +88,18 @@ const SupplierQuoteHeader = () => {
   const finalizeFetcher = useFetcher<{}>();
   const sendFetcher = useFetcher<{}>();
   const statusFetcher = useFetcher<{}>();
-  const canShare =
-    routeData?.quote.externalLinkId &&
-    ["Draft", "Active"].includes(routeData?.quote?.status ?? "");
 
   const hasLines = routeData?.lines && routeData.lines.length > 0;
+  const quoteStatus = routeData?.quote?.status ?? "";
+  const editableStatuses = ["Draft", "Active", "Declined"];
+  const isEditableStatus = editableStatuses.includes(quoteStatus);
 
-  // Validation logic for missing prices and leadtimes
-  const lines = routeData?.lines ?? [];
-  const prices = routeData?.prices ?? [];
+  const canShare = routeData?.quote.externalLinkId && isEditableStatus;
 
-  const linesMissingQuoteLinePrices = lines
-    .filter((line) => {
-      if (!line.quantity || !Array.isArray(line.quantity)) return false;
-      return line.quantity.some(
-        (qty) =>
-          !prices.some(
-            (price) =>
-              price.supplierQuoteLineId === line.id && price.quantity === qty
-          )
-      );
-    })
-    .map((line) => line.itemReadableId)
-    .filter((id): id is string => id !== undefined);
+  const canSend =
+    isEditableStatus && permissions.can("update", "purchasing") && hasLines;
 
-  const linesWithZeroPriceOrLeadTime = prices
-    .filter((price) => price.supplierUnitPrice === 0 || price.leadTime === 0)
-    .map((price) => {
-      const line = lines.find((line) => line.id === price.supplierQuoteLineId);
-      return line?.itemReadableId;
-    })
-    .filter((id): id is string => id !== undefined);
-
-  const warningLineReadableIds = [
-    ...new Set([
-      ...linesMissingQuoteLinePrices,
-      ...linesWithZeroPriceOrLeadTime,
-    ]),
-  ];
+  const canFinalize = ["Draft", "Declined"].includes(quoteStatus);
 
   return (
     <>
@@ -212,7 +186,7 @@ const SupplierQuoteHeader = () => {
               </DropdownMenu>
             )}
 
-            {routeData?.quote?.status === "Draft" && (
+            {canSend && (
               <Button
                 onClick={sendModal.onOpen}
                 isLoading={sendFetcher.state !== "idle"}
@@ -228,7 +202,7 @@ const SupplierQuoteHeader = () => {
               </Button>
             )}
 
-            {routeData?.quote?.status === "Draft" && (
+            {canFinalize && (
               <Button
                 onClick={finalizeModal.onOpen}
                 isLoading={finalizeFetcher.state !== "idle"}
@@ -337,9 +311,10 @@ const SupplierQuoteHeader = () => {
       {finalizeModal.isOpen && (
         <SupplierQuoteFinalizeModal
           quote={routeData?.quote}
+          lines={routeData?.lines ?? []}
+          prices={routeData?.prices ?? []}
           onClose={finalizeModal.onClose}
           fetcher={finalizeFetcher}
-          warningLineReadableIds={warningLineReadableIds}
         />
       )}
       {sendModal.isOpen && (
@@ -347,14 +322,6 @@ const SupplierQuoteHeader = () => {
           quote={routeData?.quote}
           onClose={sendModal.onClose}
           fetcher={sendFetcher}
-        />
-      )}
-      {finalizeModal.isOpen && (
-        <SupplierQuoteFinalizeModal
-          quote={routeData?.quote}
-          onClose={finalizeModal.onClose}
-          fetcher={sendFetcher}
-          warningLineReadableIds={warningLineReadableIds}
         />
       )}
       <ShareQuoteModal
@@ -369,17 +336,44 @@ const SupplierQuoteHeader = () => {
 
 function SupplierQuoteFinalizeModal({
   quote,
+  lines,
+  prices,
   onClose,
   fetcher,
-  warningLineReadableIds,
 }: {
   quote?: SupplierQuote;
+  lines: SupplierQuoteLine[];
+  prices: SupplierQuoteLinePrice[];
   onClose: () => void;
   fetcher: FetcherWithComponents<{}>;
-  warningLineReadableIds: string[];
 }) {
   const { id } = useParams();
   if (!id) throw new Error("id not found");
+
+  // Validation logic: A line is valid if at least ONE quantity has both price and lead time
+  // (not all quantities need them)
+  const warningLineReadableIds = lines
+    .filter((line) => {
+      if (!line.id) return true; // Missing line ID is an error
+
+      const linePrices = prices.filter(
+        (price) => price.supplierQuoteLineId === line.id
+      );
+
+      // Check if at least one quantity has both valid price and lead time
+      const hasValidPriceAndLeadTime = linePrices.some(
+        (price) =>
+          price.supplierUnitPrice !== null &&
+          price.supplierUnitPrice !== 0 &&
+          price.leadTime !== null &&
+          price.leadTime !== 0
+      );
+
+      // If no valid price/lead time found, this line has a warning
+      return !hasValidPriceAndLeadTime;
+    })
+    .map((line) => line.itemReadableId)
+    .filter((id): id is string => id !== undefined);
 
   const hasErrors = warningLineReadableIds.length > 0;
 
