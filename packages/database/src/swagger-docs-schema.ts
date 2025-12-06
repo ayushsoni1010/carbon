@@ -15669,6 +15669,186 @@ export default {
         tags: ["contractorAbility"],
       },
     },
+    "/trainingCompletion": {
+      get: {
+        parameters: [
+          {
+            $ref: "#/parameters/rowFilter.trainingCompletion.id",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingCompletion.trainingAssignmentId",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingCompletion.employeeId",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingCompletion.companyId",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingCompletion.completedAt",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingCompletion.completedBy",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingCompletion.createdAt",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingCompletion.createdBy",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingCompletion.updatedAt",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingCompletion.updatedBy",
+          },
+          {
+            $ref: "#/parameters/select",
+          },
+          {
+            $ref: "#/parameters/order",
+          },
+          {
+            $ref: "#/parameters/range",
+          },
+          {
+            $ref: "#/parameters/rangeUnit",
+          },
+          {
+            $ref: "#/parameters/offset",
+          },
+          {
+            $ref: "#/parameters/limit",
+          },
+          {
+            $ref: "#/parameters/preferCount",
+          },
+        ],
+        responses: {
+          "200": {
+            description: "OK",
+            schema: {
+              items: {
+                $ref: "#/definitions/trainingCompletion",
+              },
+              type: "array",
+            },
+          },
+          "206": {
+            description: "Partial Content",
+          },
+        },
+        tags: ["trainingCompletion"],
+      },
+      post: {
+        parameters: [
+          {
+            $ref: "#/parameters/body.trainingCompletion",
+          },
+          {
+            $ref: "#/parameters/select",
+          },
+          {
+            $ref: "#/parameters/preferPost",
+          },
+        ],
+        responses: {
+          "201": {
+            description: "Created",
+          },
+        },
+        tags: ["trainingCompletion"],
+      },
+      delete: {
+        parameters: [
+          {
+            $ref: "#/parameters/rowFilter.trainingCompletion.id",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingCompletion.trainingAssignmentId",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingCompletion.employeeId",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingCompletion.companyId",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingCompletion.completedAt",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingCompletion.completedBy",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingCompletion.createdAt",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingCompletion.createdBy",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingCompletion.updatedAt",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingCompletion.updatedBy",
+          },
+          {
+            $ref: "#/parameters/preferReturn",
+          },
+        ],
+        responses: {
+          "204": {
+            description: "No Content",
+          },
+        },
+        tags: ["trainingCompletion"],
+      },
+      patch: {
+        parameters: [
+          {
+            $ref: "#/parameters/rowFilter.trainingCompletion.id",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingCompletion.trainingAssignmentId",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingCompletion.employeeId",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingCompletion.companyId",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingCompletion.completedAt",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingCompletion.completedBy",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingCompletion.createdAt",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingCompletion.createdBy",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingCompletion.updatedAt",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingCompletion.updatedBy",
+          },
+          {
+            $ref: "#/parameters/body.trainingCompletion",
+          },
+          {
+            $ref: "#/parameters/preferReturn",
+          },
+        ],
+        responses: {
+          "204": {
+            description: "No Content",
+          },
+        },
+        tags: ["trainingCompletion"],
+      },
+    },
     "/nonConformanceCustomer": {
       get: {
         parameters: [
@@ -33586,6 +33766,168 @@ export default {
           },
         },
         tags: ["nonConformanceItem"],
+      },
+    },
+    "/trainingAssignment": {
+      get: {
+        parameters: [
+          {
+            $ref: "#/parameters/rowFilter.trainingAssignment.id",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingAssignment.trainingId",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingAssignment.groupIds",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingAssignment.companyId",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingAssignment.createdAt",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingAssignment.createdBy",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingAssignment.updatedAt",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingAssignment.updatedBy",
+          },
+          {
+            $ref: "#/parameters/select",
+          },
+          {
+            $ref: "#/parameters/order",
+          },
+          {
+            $ref: "#/parameters/range",
+          },
+          {
+            $ref: "#/parameters/rangeUnit",
+          },
+          {
+            $ref: "#/parameters/offset",
+          },
+          {
+            $ref: "#/parameters/limit",
+          },
+          {
+            $ref: "#/parameters/preferCount",
+          },
+        ],
+        responses: {
+          "200": {
+            description: "OK",
+            schema: {
+              items: {
+                $ref: "#/definitions/trainingAssignment",
+              },
+              type: "array",
+            },
+          },
+          "206": {
+            description: "Partial Content",
+          },
+        },
+        tags: ["trainingAssignment"],
+      },
+      post: {
+        parameters: [
+          {
+            $ref: "#/parameters/body.trainingAssignment",
+          },
+          {
+            $ref: "#/parameters/select",
+          },
+          {
+            $ref: "#/parameters/preferPost",
+          },
+        ],
+        responses: {
+          "201": {
+            description: "Created",
+          },
+        },
+        tags: ["trainingAssignment"],
+      },
+      delete: {
+        parameters: [
+          {
+            $ref: "#/parameters/rowFilter.trainingAssignment.id",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingAssignment.trainingId",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingAssignment.groupIds",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingAssignment.companyId",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingAssignment.createdAt",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingAssignment.createdBy",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingAssignment.updatedAt",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingAssignment.updatedBy",
+          },
+          {
+            $ref: "#/parameters/preferReturn",
+          },
+        ],
+        responses: {
+          "204": {
+            description: "No Content",
+          },
+        },
+        tags: ["trainingAssignment"],
+      },
+      patch: {
+        parameters: [
+          {
+            $ref: "#/parameters/rowFilter.trainingAssignment.id",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingAssignment.trainingId",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingAssignment.groupIds",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingAssignment.companyId",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingAssignment.createdAt",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingAssignment.createdBy",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingAssignment.updatedAt",
+          },
+          {
+            $ref: "#/parameters/rowFilter.trainingAssignment.updatedBy",
+          },
+          {
+            $ref: "#/parameters/body.trainingAssignment",
+          },
+          {
+            $ref: "#/parameters/preferReturn",
+          },
+        ],
+        responses: {
+          "204": {
+            description: "No Content",
+          },
+        },
+        tags: ["trainingAssignment"],
       },
     },
     "/configurationRule": {
@@ -52974,6 +53316,240 @@ export default {
         tags: ["workCenter"],
       },
     },
+    "/training": {
+      get: {
+        parameters: [
+          {
+            $ref: "#/parameters/rowFilter.training.id",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.name",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.description",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.version",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.status",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.frequency",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.type",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.content",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.estimatedDuration",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.tags",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.assignee",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.companyId",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.createdAt",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.createdBy",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.updatedAt",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.updatedBy",
+          },
+          {
+            $ref: "#/parameters/select",
+          },
+          {
+            $ref: "#/parameters/order",
+          },
+          {
+            $ref: "#/parameters/range",
+          },
+          {
+            $ref: "#/parameters/rangeUnit",
+          },
+          {
+            $ref: "#/parameters/offset",
+          },
+          {
+            $ref: "#/parameters/limit",
+          },
+          {
+            $ref: "#/parameters/preferCount",
+          },
+        ],
+        responses: {
+          "200": {
+            description: "OK",
+            schema: {
+              items: {
+                $ref: "#/definitions/training",
+              },
+              type: "array",
+            },
+          },
+          "206": {
+            description: "Partial Content",
+          },
+        },
+        tags: ["training"],
+      },
+      post: {
+        parameters: [
+          {
+            $ref: "#/parameters/body.training",
+          },
+          {
+            $ref: "#/parameters/select",
+          },
+          {
+            $ref: "#/parameters/preferPost",
+          },
+        ],
+        responses: {
+          "201": {
+            description: "Created",
+          },
+        },
+        tags: ["training"],
+      },
+      delete: {
+        parameters: [
+          {
+            $ref: "#/parameters/rowFilter.training.id",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.name",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.description",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.version",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.status",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.frequency",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.type",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.content",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.estimatedDuration",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.tags",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.assignee",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.companyId",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.createdAt",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.createdBy",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.updatedAt",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.updatedBy",
+          },
+          {
+            $ref: "#/parameters/preferReturn",
+          },
+        ],
+        responses: {
+          "204": {
+            description: "No Content",
+          },
+        },
+        tags: ["training"],
+      },
+      patch: {
+        parameters: [
+          {
+            $ref: "#/parameters/rowFilter.training.id",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.name",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.description",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.version",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.status",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.frequency",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.type",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.content",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.estimatedDuration",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.tags",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.assignee",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.companyId",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.createdAt",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.createdBy",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.updatedAt",
+          },
+          {
+            $ref: "#/parameters/rowFilter.training.updatedBy",
+          },
+          {
+            $ref: "#/parameters/body.training",
+          },
+          {
+            $ref: "#/parameters/preferReturn",
+          },
+        ],
+        responses: {
+          "204": {
+            description: "No Content",
+          },
+        },
+        tags: ["training"],
+      },
+    },
     "/gauge": {
       get: {
         parameters: [
@@ -56711,6 +57287,41 @@ export default {
           },
         },
         tags: ["(rpc) has_company_permission"],
+      },
+    },
+    "/rpc/get_training_assignments_by_user": {
+      post: {
+        parameters: [
+          {
+            in: "body",
+            name: "args",
+            required: true,
+            schema: {
+              properties: {
+                user_id: {
+                  format: "text",
+                  type: "string",
+                },
+              },
+              required: ["user_id"],
+              type: "object",
+            },
+          },
+          {
+            $ref: "#/parameters/preferParams",
+          },
+        ],
+        produces: [
+          "application/json",
+          "application/vnd.pgrst.object+json;nulls=stripped",
+          "application/vnd.pgrst.object+json",
+        ],
+        responses: {
+          "200": {
+            description: "OK",
+          },
+        },
+        tags: ["(rpc) get_training_assignments_by_user"],
       },
     },
     "/rpc/create_rfq_from_models_v2": {
@@ -67750,6 +68361,74 @@ export default {
       },
       type: "object",
     },
+    trainingCompletion: {
+      required: [
+        "id",
+        "trainingAssignmentId",
+        "employeeId",
+        "companyId",
+        "completedAt",
+        "completedBy",
+        "createdAt",
+        "createdBy",
+      ],
+      properties: {
+        id: {
+          description: "Note:\nThis is a Primary Key.<pk/>",
+          format: "integer",
+          type: "integer",
+        },
+        trainingAssignmentId: {
+          description:
+            "Note:\nThis is a Foreign Key to `trainingAssignment.id`.<fk table='trainingAssignment' column='id'/>",
+          format: "integer",
+          type: "integer",
+        },
+        employeeId: {
+          description:
+            "Note:\nThis is a Foreign Key to `user.id`.<fk table='user' column='id'/>",
+          format: "text",
+          type: "string",
+        },
+        companyId: {
+          description:
+            "Note:\nThis is a Foreign Key to `company.id`.<fk table='company' column='id'/>",
+          format: "text",
+          type: "string",
+        },
+        completedAt: {
+          default: "now()",
+          format: "timestamp with time zone",
+          type: "string",
+        },
+        completedBy: {
+          format: "text",
+          type: "string",
+        },
+        createdAt: {
+          default: "now()",
+          format: "timestamp with time zone",
+          type: "string",
+        },
+        createdBy: {
+          description:
+            "Note:\nThis is a Foreign Key to `user.id`.<fk table='user' column='id'/>",
+          format: "text",
+          type: "string",
+        },
+        updatedAt: {
+          format: "timestamp with time zone",
+          type: "string",
+        },
+        updatedBy: {
+          description:
+            "Note:\nThis is a Foreign Key to `user.id`.<fk table='user' column='id'/>",
+          format: "text",
+          type: "string",
+        },
+      },
+      type: "object",
+    },
     nonConformanceCustomer: {
       required: [
         "id",
@@ -75978,6 +76657,57 @@ export default {
           default: 0,
           format: "numeric",
           type: "number",
+        },
+      },
+      type: "object",
+    },
+    trainingAssignment: {
+      required: ["id", "trainingId", "companyId", "createdAt", "createdBy"],
+      properties: {
+        id: {
+          description: "Note:\nThis is a Primary Key.<pk/>",
+          format: "integer",
+          type: "integer",
+        },
+        trainingId: {
+          description:
+            "Note:\nThis is a Foreign Key to `training.id`.<fk table='training' column='id'/>",
+          format: "text",
+          type: "string",
+        },
+        groupIds: {
+          format: "text[]",
+          items: {
+            type: "string",
+          },
+          type: "array",
+        },
+        companyId: {
+          description:
+            "Note:\nThis is a Foreign Key to `company.id`.<fk table='company' column='id'/>",
+          format: "text",
+          type: "string",
+        },
+        createdAt: {
+          default: "now()",
+          format: "timestamp with time zone",
+          type: "string",
+        },
+        createdBy: {
+          description:
+            "Note:\nThis is a Foreign Key to `user.id`.<fk table='user' column='id'/>",
+          format: "text",
+          type: "string",
+        },
+        updatedAt: {
+          format: "timestamp with time zone",
+          type: "string",
+        },
+        updatedBy: {
+          description:
+            "Note:\nThis is a Foreign Key to `user.id`.<fk table='user' column='id'/>",
+          format: "text",
+          type: "string",
         },
       },
       type: "object",
@@ -85522,6 +86252,105 @@ export default {
             type: "string",
           },
           type: "array",
+        },
+      },
+      type: "object",
+    },
+    training: {
+      required: [
+        "id",
+        "name",
+        "version",
+        "status",
+        "frequency",
+        "type",
+        "createdAt",
+        "createdBy",
+      ],
+      properties: {
+        id: {
+          default: "public.id('train'::text)",
+          description: "Note:\nThis is a Primary Key.<pk/>",
+          format: "text",
+          type: "string",
+        },
+        name: {
+          format: "text",
+          type: "string",
+        },
+        description: {
+          format: "text",
+          type: "string",
+        },
+        version: {
+          default: 0,
+          format: "numeric",
+          type: "number",
+        },
+        status: {
+          default: "Draft",
+          enum: ["Draft", "Active", "Archived"],
+          format: 'public."trainingStatus"',
+          type: "string",
+        },
+        frequency: {
+          default: "Once",
+          enum: ["Once", "Quarterly", "Annual"],
+          format: 'public."trainingFrequency"',
+          type: "string",
+        },
+        type: {
+          default: "Mandatory",
+          enum: ["Mandatory", "Optional"],
+          format: 'public."trainingType"',
+          type: "string",
+        },
+        content: {
+          format: "json",
+        },
+        estimatedDuration: {
+          format: "text",
+          type: "string",
+        },
+        tags: {
+          format: "text[]",
+          items: {
+            type: "string",
+          },
+          type: "array",
+        },
+        assignee: {
+          description:
+            "Note:\nThis is a Foreign Key to `user.id`.<fk table='user' column='id'/>",
+          format: "text",
+          type: "string",
+        },
+        companyId: {
+          description:
+            "Note:\nThis is a Foreign Key to `company.id`.<fk table='company' column='id'/>",
+          format: "text",
+          type: "string",
+        },
+        createdAt: {
+          default: "now()",
+          format: "timestamp with time zone",
+          type: "string",
+        },
+        createdBy: {
+          description:
+            "Note:\nThis is a Foreign Key to `user.id`.<fk table='user' column='id'/>",
+          format: "text",
+          type: "string",
+        },
+        updatedAt: {
+          format: "timestamp with time zone",
+          type: "string",
+        },
+        updatedBy: {
+          description:
+            "Note:\nThis is a Foreign Key to `user.id`.<fk table='user' column='id'/>",
+          format: "text",
+          type: "string",
         },
       },
       type: "object",
@@ -95545,6 +96374,75 @@ export default {
       in: "query",
       type: "string",
     },
+    "body.trainingCompletion": {
+      name: "trainingCompletion",
+      description: "trainingCompletion",
+      required: false,
+      in: "body",
+      schema: {
+        $ref: "#/definitions/trainingCompletion",
+      },
+    },
+    "rowFilter.trainingCompletion.id": {
+      name: "id",
+      required: false,
+      in: "query",
+      type: "string",
+    },
+    "rowFilter.trainingCompletion.trainingAssignmentId": {
+      name: "trainingAssignmentId",
+      required: false,
+      in: "query",
+      type: "string",
+    },
+    "rowFilter.trainingCompletion.employeeId": {
+      name: "employeeId",
+      required: false,
+      in: "query",
+      type: "string",
+    },
+    "rowFilter.trainingCompletion.companyId": {
+      name: "companyId",
+      required: false,
+      in: "query",
+      type: "string",
+    },
+    "rowFilter.trainingCompletion.completedAt": {
+      name: "completedAt",
+      required: false,
+      in: "query",
+      type: "string",
+    },
+    "rowFilter.trainingCompletion.completedBy": {
+      name: "completedBy",
+      required: false,
+      in: "query",
+      type: "string",
+    },
+    "rowFilter.trainingCompletion.createdAt": {
+      name: "createdAt",
+      required: false,
+      in: "query",
+      type: "string",
+    },
+    "rowFilter.trainingCompletion.createdBy": {
+      name: "createdBy",
+      required: false,
+      in: "query",
+      type: "string",
+    },
+    "rowFilter.trainingCompletion.updatedAt": {
+      name: "updatedAt",
+      required: false,
+      in: "query",
+      type: "string",
+    },
+    "rowFilter.trainingCompletion.updatedBy": {
+      name: "updatedBy",
+      required: false,
+      in: "query",
+      type: "string",
+    },
     "body.nonConformanceCustomer": {
       name: "nonConformanceCustomer",
       description: "nonConformanceCustomer",
@@ -104817,6 +105715,63 @@ export default {
     },
     "rowFilter.nonConformanceItem.quantity": {
       name: "quantity",
+      required: false,
+      in: "query",
+      type: "string",
+    },
+    "body.trainingAssignment": {
+      name: "trainingAssignment",
+      description: "trainingAssignment",
+      required: false,
+      in: "body",
+      schema: {
+        $ref: "#/definitions/trainingAssignment",
+      },
+    },
+    "rowFilter.trainingAssignment.id": {
+      name: "id",
+      required: false,
+      in: "query",
+      type: "string",
+    },
+    "rowFilter.trainingAssignment.trainingId": {
+      name: "trainingId",
+      required: false,
+      in: "query",
+      type: "string",
+    },
+    "rowFilter.trainingAssignment.groupIds": {
+      name: "groupIds",
+      required: false,
+      in: "query",
+      type: "string",
+    },
+    "rowFilter.trainingAssignment.companyId": {
+      name: "companyId",
+      required: false,
+      in: "query",
+      type: "string",
+    },
+    "rowFilter.trainingAssignment.createdAt": {
+      name: "createdAt",
+      required: false,
+      in: "query",
+      type: "string",
+    },
+    "rowFilter.trainingAssignment.createdBy": {
+      name: "createdBy",
+      required: false,
+      in: "query",
+      type: "string",
+    },
+    "rowFilter.trainingAssignment.updatedAt": {
+      name: "updatedAt",
+      required: false,
+      in: "query",
+      type: "string",
+    },
+    "rowFilter.trainingAssignment.updatedBy": {
+      name: "updatedBy",
       required: false,
       in: "query",
       type: "string",
@@ -115623,6 +116578,111 @@ export default {
     },
     "rowFilter.workCenter.tags": {
       name: "tags",
+      required: false,
+      in: "query",
+      type: "string",
+    },
+    "body.training": {
+      name: "training",
+      description: "training",
+      required: false,
+      in: "body",
+      schema: {
+        $ref: "#/definitions/training",
+      },
+    },
+    "rowFilter.training.id": {
+      name: "id",
+      required: false,
+      in: "query",
+      type: "string",
+    },
+    "rowFilter.training.name": {
+      name: "name",
+      required: false,
+      in: "query",
+      type: "string",
+    },
+    "rowFilter.training.description": {
+      name: "description",
+      required: false,
+      in: "query",
+      type: "string",
+    },
+    "rowFilter.training.version": {
+      name: "version",
+      required: false,
+      in: "query",
+      type: "string",
+    },
+    "rowFilter.training.status": {
+      name: "status",
+      required: false,
+      in: "query",
+      type: "string",
+    },
+    "rowFilter.training.frequency": {
+      name: "frequency",
+      required: false,
+      in: "query",
+      type: "string",
+    },
+    "rowFilter.training.type": {
+      name: "type",
+      required: false,
+      in: "query",
+      type: "string",
+    },
+    "rowFilter.training.content": {
+      name: "content",
+      required: false,
+      in: "query",
+      type: "string",
+    },
+    "rowFilter.training.estimatedDuration": {
+      name: "estimatedDuration",
+      required: false,
+      in: "query",
+      type: "string",
+    },
+    "rowFilter.training.tags": {
+      name: "tags",
+      required: false,
+      in: "query",
+      type: "string",
+    },
+    "rowFilter.training.assignee": {
+      name: "assignee",
+      required: false,
+      in: "query",
+      type: "string",
+    },
+    "rowFilter.training.companyId": {
+      name: "companyId",
+      required: false,
+      in: "query",
+      type: "string",
+    },
+    "rowFilter.training.createdAt": {
+      name: "createdAt",
+      required: false,
+      in: "query",
+      type: "string",
+    },
+    "rowFilter.training.createdBy": {
+      name: "createdBy",
+      required: false,
+      in: "query",
+      type: "string",
+    },
+    "rowFilter.training.updatedAt": {
+      name: "updatedAt",
+      required: false,
+      in: "query",
+      type: "string",
+    },
+    "rowFilter.training.updatedBy": {
+      name: "updatedBy",
       required: false,
       in: "query",
       type: "string",

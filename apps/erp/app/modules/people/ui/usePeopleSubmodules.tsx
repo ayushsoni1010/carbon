@@ -1,9 +1,10 @@
 import {
   LuCalendarClock,
   LuCalendarHeart,
+  LuGraduationCap,
+  LuListChecks,
   LuNetwork,
   LuUsers,
-  LuListChecks,
 } from "react-icons/lu";
 import { useSavedViews } from "~/hooks/useSavedViews";
 import type { RouteGroup } from "~/types";
@@ -18,6 +19,12 @@ const peopleRoutes: RouteGroup[] = [
         to: path.to.people,
         icon: <LuUsers />,
         table: "employee",
+      },
+      {
+        name: "Training",
+        to: path.to.trainings,
+        icon: <LuGraduationCap />,
+        table: "training",
       },
     ],
   },

@@ -1,6 +1,6 @@
 import type { Database, Json } from "@carbon/database";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { z } from 'zod/v3';
+import type { z } from "zod/v3";
 import type { DataType } from "~/modules/shared";
 import type { Employee } from "~/modules/users";
 import { getEmployees } from "~/modules/users/users.service";
@@ -86,7 +86,7 @@ async function getAttributes(
     )
     .eq("companyId", companyId)
     .eq("userAttribute.active", true)
-    .in("userAttribute.userAttributeValue.userId", [userIds])
+    .in("userAttribute.userAttributeValue.userId", userIds)
     .order("sortOrder", { foreignTable: "userAttribute", ascending: true });
 }
 

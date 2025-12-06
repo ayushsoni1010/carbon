@@ -100,21 +100,13 @@ CREATE TABLE "trainingAssignment" (
   CONSTRAINT "trainingAssignment_trainingId_fkey" FOREIGN KEY ("trainingId") REFERENCES "training"("id") ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT "trainingAssignment_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "company"("id") ON DELETE CASCADE ON UPDATE CASCADE,
   CONSTRAINT "trainingAssignment_createdBy_fkey" FOREIGN KEY ("createdBy") REFERENCES "user"("id") ON UPDATE CASCADE,
-  CONSTRAINT "trainingAssignment_updatedBy_fkey" FOREIGN KEY ("updatedBy") REFERENCES "user"("id") ON UPDATE CASCADE,
-  CONSTRAINT "trainingAssignment_single_target_check" CHECK (
-    (
-      ("employeeId" IS NOT NULL)::int +
-      ("departmentId" IS NOT NULL)::int +
-      ("groupIds" IS NOT NULL AND array_length("groupIds", 1) > 0)::int
-    ) = 1
-  )
+  CONSTRAINT "trainingAssignment_updatedBy_fkey" FOREIGN KEY ("updatedBy") REFERENCES "user"("id") ON UPDATE CASCADE
+  
 );
 
 CREATE INDEX "trainingAssignment_companyId_idx" ON "trainingAssignment" ("companyId");
 CREATE INDEX "trainingAssignment_trainingId_idx" ON "trainingAssignment" ("trainingId");
-CREATE INDEX "trainingAssignment_employeeId_idx" ON "trainingAssignment" ("employeeId");
-CREATE INDEX "trainingAssignment_departmentId_idx" ON "trainingAssignment" ("departmentId");
-CREATE INDEX "trainingAssignment_groupIds_idx" ON "trainingAssignment" ("groupIds");
+CREATE INDEX "trainingAssignment_groupIds_idx" ON "trainingAssignment" USING GIN ("groupIds");
 
 ALTER TABLE "trainingAssignment" ENABLE ROW LEVEL SECURITY;
 
@@ -231,9 +223,134 @@ FOR DELETE USING (
   )
 );
 
+CREATE TYPE "trainingQuestionType" AS ENUM (
+  'MultipleChoice',
+  'TrueFalse',
+  'MultipleAnswers',
+  'MatchingPairs',
+  'Numerical'
+);
+
+CREATE TABLE "trainingQuestion" (
+  "id" TEXT NOT NULL DEFAULT id('tq'),
+  "trainingId" TEXT NOT NULL,
+  "question" TEXT NOT NULL,
+  "type" "trainingQuestionType" NOT NULL,
+  "sortOrder" DOUBLE PRECISION NOT NULL DEFAULT 1,
+  "required" BOOLEAN DEFAULT TRUE,
+
+  -- For MultipleChoice and MultipleAnswers
+  "options" TEXT[],
+  "correctAnswers" TEXT[],
+
+  -- For TrueFalse
+  "correctBoolean" BOOLEAN,
+
+  -- For MatchingPairs: stored as JSON array [{left: "...", right: "..."}, ...]
+  "matchingPairs" JSON,
+
+  -- For Numerical
+  "correctNumber" DECIMAL,
+  "tolerance" DECIMAL,
+
+  -- Audit fields
+  "companyId" TEXT NOT NULL,
+  "createdAt" TIMESTAMP WITH TIME ZONE DEFAULT NOW() NOT NULL,
+  "createdBy" TEXT NOT NULL,
+  "updatedAt" TIMESTAMP WITH TIME ZONE,
+  "updatedBy" TEXT,
+
+  CONSTRAINT "trainingQuestion_pkey" PRIMARY KEY ("id"),
+  CONSTRAINT "trainingQuestion_trainingId_fkey" FOREIGN KEY ("trainingId")
+    REFERENCES "training"("id") ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT "trainingQuestion_companyId_fkey" FOREIGN KEY ("companyId")
+    REFERENCES "company"("id") ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT "trainingQuestion_createdBy_fkey" FOREIGN KEY ("createdBy")
+    REFERENCES "user"("id") ON UPDATE CASCADE,
+  CONSTRAINT "trainingQuestion_updatedBy_fkey" FOREIGN KEY ("updatedBy")
+    REFERENCES "user"("id") ON UPDATE CASCADE
+);
+
+CREATE INDEX "trainingQuestion_trainingId_idx" ON "trainingQuestion" ("trainingId");
+CREATE INDEX "trainingQuestion_companyId_idx" ON "trainingQuestion" ("companyId");
+
+ALTER TABLE "trainingQuestion" ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "SELECT" ON "public"."trainingQuestion"
+FOR SELECT USING (
+  "companyId" = ANY (
+    (
+      SELECT
+        get_companies_with_employee_role()
+    )::text[]
+  )
+);
+
+CREATE POLICY "INSERT" ON "public"."trainingQuestion"
+FOR INSERT WITH CHECK (
+  "companyId" = ANY (
+    (
+      SELECT
+        get_companies_with_employee_permission ('people_create')
+    )::text[]
+  )
+);
+
+CREATE POLICY "UPDATE" ON "public"."trainingQuestion"
+FOR UPDATE USING (
+  "companyId" = ANY (
+    (
+      SELECT
+        get_companies_with_employee_permission ('people_update')
+    )::text[]
+  )
+);
+
+CREATE POLICY "DELETE" ON "public"."trainingQuestion"
+FOR DELETE USING (
+  "companyId" = ANY (
+    (
+      SELECT
+        get_companies_with_employee_permission ('people_delete')
+    )::text[]
+  )
+);
+
+DROP VIEW IF EXISTS "trainings";
+CREATE OR REPLACE VIEW "trainings" WITH(SECURITY_INVOKER=true) AS
+  SELECT
+    t1."id",
+    t1."name",
+    t1."description",
+    t1."version",
+    t1."status",
+    t1."type",
+    t1."frequency",
+    t1."assignee",
+    t1."estimatedDuration",
+    t1."tags",
+    t1."companyId",
+    jsonb_agg(
+      jsonb_build_object(
+        'id', t2."id",
+        'version', t2."version",
+        'status', t2."status"
+      )
+    ) as "versions"
+  FROM "training" t1
+  JOIN "training" t2 ON t1."name" = t2."name" AND t1."companyId" = t2."companyId"
+  WHERE t1."version" = (
+    SELECT MAX("version")
+    FROM "training" t3
+    WHERE t3."name" = t1."name"
+    AND t3."companyId" = t1."companyId"
+  )
+  GROUP BY t1."id", t1."name", t1."description", t1."version", t1."status", t1."type",
+           t1."frequency", t1."assignee", t1."estimatedDuration", t1."tags", t1."companyId";
+
 CREATE OR REPLACE FUNCTION get_training_assignments_by_user(user_id text)
 RETURNS TABLE (
-  "trainingAssignmentId" uuid,
+  "trainingAssignmentId" INTEGER,
   "name" TEXT,
   "description" TEXT,
   "version" NUMERIC,
@@ -274,7 +391,7 @@ BEGIN
     ta."updatedBy"
   FROM "trainingAssignment" ta
   JOIN "training" t ON ta."trainingId" = t.id
-  WHERE ta."groupId" = ANY(
+  WHERE ta."groupIds" && ARRAY(
     SELECT group_id FROM groups_for_user(user_id)
   );
 END;

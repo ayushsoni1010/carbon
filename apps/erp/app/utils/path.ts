@@ -1163,6 +1163,20 @@ export const path = {
     qualityDocumentStepOrder: (id: string) =>
       generatePath(`${x}/quality-document/${id}/steps/order`),
 
+    training: (id: string) => generatePath(`${x}/training/${id}`),
+    trainings: `${x}/people/training`,
+    newTraining: `${x}/people/training/new`,
+    newTrainingQuestion: (id: string) =>
+      generatePath(`${x}/training/${id}/questions/new`),
+    trainingQuestion: (id: string, questionId: string) =>
+      generatePath(`${x}/training/${id}/questions/${questionId}`),
+    deleteTraining: (id: string) => generatePath(`${x}/training/delete/${id}`),
+    deleteTrainingQuestion: (id: string, questionId: string) =>
+      generatePath(`${x}/training/${id}/questions/delete/${questionId}`),
+    trainingQuestionOrder: (id: string) =>
+      generatePath(`${x}/training/${id}/questions/order`),
+    bulkUpdateTraining: `${x}/training/update`,
+
     quote: (id: string) => generatePath(`${x}/quote/${id}`),
     quoteAssembly: (quoteId: string, lineId: string, assemblyId: string) =>
       generatePath(

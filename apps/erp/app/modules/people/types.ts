@@ -9,6 +9,11 @@ import type {
   getPeople,
   getShifts,
 } from "./people.service";
+import type {
+  getTraining,
+  getTrainingQuestions,
+  getTrainings,
+} from "./training.service";
 
 export type Attribute = NonNullable<
   Awaited<ReturnType<typeof getAttribute>>["data"]
@@ -57,4 +62,16 @@ export type Person = NonNullable<
 
 export type Shift = NonNullable<
   Awaited<ReturnType<typeof getShifts>>["data"]
+>[number];
+
+export type Training = NonNullable<
+  Awaited<ReturnType<typeof getTraining>>["data"]
+>;
+
+export type TrainingListItem = NonNullable<
+  Awaited<ReturnType<typeof getTrainings>>["data"]
+>[number];
+
+export type TrainingQuestion = NonNullable<
+  Awaited<ReturnType<typeof getTrainingQuestions>>["data"]
 >[number];
