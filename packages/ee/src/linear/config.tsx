@@ -25,7 +25,12 @@ export const Linear: IntegrationConfig = {
     },
   ],
   schema: z.object({
-    apiKey: z.string().min(1, { message: "API Key is required" }),
+    apiKey: z
+      .string()
+      .min(1, { message: "API Key is required" })
+      .refine((val) => val.startsWith("lin_api"), {
+        message: "Linear API Key must start with 'lin_api'",
+      }),
   }),
 };
 
