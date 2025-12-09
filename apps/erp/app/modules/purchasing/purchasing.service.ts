@@ -108,7 +108,7 @@ export async function sendSupplierQuote(
     return quoteUpdate;
   }
 
-  return { data: null, error: null };
+  return quoteUpdate;
 }
 
 export async function deletePurchaseOrder(
