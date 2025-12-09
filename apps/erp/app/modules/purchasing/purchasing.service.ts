@@ -87,7 +87,7 @@ export async function finalizeSupplierQuote(
     return quoteUpdate;
   }
 
-  return { data: null, error: null };
+  return quoteUpdate;
 }
 
 export async function sendSupplierQuote(
