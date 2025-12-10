@@ -197,10 +197,12 @@ const Header = ({ company, quote }: { company: any; quote: any }) => (
         )}
       </div>
 
-      <span className="text-base font-semibold text-blue-900 dark:text-blue-100">
-        Please fill the columns marked with the <EditableBadge /> icon to
-        provide pricing
-      </span>
+      {quote.status === "Draft" ? (
+        <span className="text-base font-semibold foreground">
+          Please fill the columns marked with the <EditableBadge /> icon to
+          provide pricing
+        </span>
+      ) : null}
     </VStack>
   </CardHeader>
 );
@@ -483,25 +485,25 @@ const LinePricing = ({
             <Th className="w-[150px]">
               <HStack spacing={4}>
                 <span>Unit Price</span>
-                <EditableBadge />
+                {quoteStatus === "Draft" ? <EditableBadge /> : null}
               </HStack>
             </Th>
             <Th className="w-[120px]">
               <HStack spacing={4}>
                 <span>Lead Time</span>
-                <EditableBadge />
+                {quoteStatus === "Draft" ? <EditableBadge /> : null}
               </HStack>
             </Th>
             <Th className="w-[150px]">
               <HStack spacing={4}>
                 <span>Shipping Cost</span>
-                <EditableBadge />
+                {quoteStatus === "Draft" ? <EditableBadge /> : null}
               </HStack>
             </Th>
             <Th className="w-[150px]">
               <HStack spacing={4}>
                 <span>Tax</span>
-                <EditableBadge />
+                {quoteStatus === "Draft" ? <EditableBadge /> : null}
               </HStack>
             </Th>
             <Th className="w-[100px] bg-muted/50">Total</Th>
@@ -511,6 +513,7 @@ const LinePricing = ({
           {quantities.map((qty, index) => {
             const storedPricing = pricingByQuantity[qty];
             const pricing = getPricingForQuantity(qty);
+
             const selectedLine = selectedLines[qty];
             const isSelected = !!selectedLine && selectedLine.quantity === qty;
             const unitPrice =

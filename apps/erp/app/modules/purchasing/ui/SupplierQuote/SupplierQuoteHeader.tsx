@@ -35,7 +35,6 @@ import {
   LuPanelRight,
   LuShoppingCart,
   LuTrash,
-  LuShare,
   LuEye,
   LuChevronDown,
   LuExternalLink,
@@ -94,9 +93,6 @@ const SupplierQuoteHeader = () => {
   const editableStatuses = ["Draft", "Declined"];
   const isEditableStatus = editableStatuses.includes(quoteStatus);
 
-  const canShare = routeData?.quote.externalLinkId && isEditableStatus;
-  const canPreview = routeData?.quote.externalLinkId && isEditableStatus;
-
   const canSend =
     isEditableStatus && permissions.can("update", "purchasing") && hasLines;
 
@@ -150,42 +146,31 @@ const SupplierQuoteHeader = () => {
             )}
           </HStack>
           <HStack>
-            {canShare && (
-              <Button
-                leftIcon={<LuShare />}
-                variant="secondary"
-                onClick={shareModal.onOpen}
-              >
-                Share
-              </Button>
-            )}
-            {canPreview && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    leftIcon={<LuEye />}
-                    variant="secondary"
-                    rightIcon={<LuChevronDown />}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  leftIcon={<LuEye />}
+                  variant="secondary"
+                  rightIcon={<LuChevronDown />}
+                >
+                  Preview
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem asChild>
+                  <a
+                    target="_blank"
+                    href={path.to.externalSupplierQuote(
+                      (routeData?.quote as any).externalLinkId
+                    )}
+                    rel="noreferrer"
                   >
-                    Preview
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuItem asChild>
-                    <a
-                      target="_blank"
-                      href={path.to.externalSupplierQuote(
-                        (routeData?.quote as any).externalLinkId
-                      )}
-                      rel="noreferrer"
-                    >
-                      <DropdownMenuIcon icon={<LuExternalLink />} />
-                      Digital Quote
-                    </a>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
+                    <DropdownMenuIcon icon={<LuExternalLink />} />
+                    Digital Quote
+                  </a>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             {canSend && (
               <Button

@@ -98,7 +98,7 @@ export const ChatInput = forwardRef<RecordButtonRef, ChatInputProps>(
         <div
           className={cn(
             "transition-all duration-300 ease-in-out",
-            hasMessages ? "absolute bottom-6 left-0 z-20" : ""
+            hasMessages ? "absolute bottom-6 left-0 z-20 w-full" : ""
             // isCanvasVisible ? "right-[603px]" : "right-0"
           )}
         >
