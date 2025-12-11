@@ -32861,6 +32861,7 @@ export type Database = {
           exchangeRate: number | null
           exchangeRateUpdatedAt: string | null
           expirationDate: string | null
+          externalLinkId: string | null
           externalNotes: Json | null
           id: string
           internalNotes: Json | null
@@ -32888,6 +32889,7 @@ export type Database = {
           exchangeRate?: number | null
           exchangeRateUpdatedAt?: string | null
           expirationDate?: string | null
+          externalLinkId?: string | null
           externalNotes?: Json | null
           id?: string
           internalNotes?: Json | null
@@ -32915,6 +32917,7 @@ export type Database = {
           exchangeRate?: number | null
           exchangeRateUpdatedAt?: string | null
           expirationDate?: string | null
+          externalLinkId?: string | null
           externalNotes?: Json | null
           id?: string
           internalNotes?: Json | null
@@ -33037,6 +33040,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "currencyCode"
             referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "supplierQuote_externalLinkId_fkey"
+            columns: ["externalLinkId"]
+            isOneToOne: false
+            referencedRelation: "externalLink"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "supplierQuote_supplierContactId_fkey"
@@ -48651,6 +48661,7 @@ export type Database = {
           exchangeRate: number | null
           exchangeRateUpdatedAt: string | null
           expirationDate: string | null
+          externalLinkId: string | null
           externalNotes: Json | null
           id: string | null
           internalNotes: Json | null
@@ -48777,6 +48788,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "currencyCode"
             referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "supplierQuote_externalLinkId_fkey"
+            columns: ["externalLinkId"]
+            isOneToOne: false
+            referencedRelation: "externalLink"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "supplierQuote_supplierContactId_fkey"
@@ -51358,7 +51376,12 @@ export type Database = {
         | "Finance Charge Memo"
         | "Reminder"
         | "Refund"
-      supplierQuoteStatus: "Active" | "Expired"
+      supplierQuoteStatus:
+        | "Active"
+        | "Expired"
+        | "Draft"
+        | "Declined"
+        | "Cancelled"
       supplySourceType: "Purchase Order" | "Production Order"
       tableViewType: "Public" | "Private"
       trackedEntityStatus: "Available" | "Reserved" | "On Hold" | "Consumed"
@@ -52484,7 +52507,13 @@ export const Constants = {
         "Reminder",
         "Refund",
       ],
-      supplierQuoteStatus: ["Active", "Expired"],
+      supplierQuoteStatus: [
+        "Active",
+        "Expired",
+        "Draft",
+        "Declined",
+        "Cancelled",
+      ],
       supplySourceType: ["Purchase Order", "Production Order"],
       tableViewType: ["Public", "Private"],
       trackedEntityStatus: ["Available", "Reserved", "On Hold", "Consumed"],

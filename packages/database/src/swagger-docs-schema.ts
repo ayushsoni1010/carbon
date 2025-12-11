@@ -30166,6 +30166,9 @@ export default {
             $ref: "#/parameters/rowFilter.supplierQuotes.supplierQuoteType",
           },
           {
+            $ref: "#/parameters/rowFilter.supplierQuotes.externalLinkId",
+          },
+          {
             $ref: "#/parameters/rowFilter.supplierQuotes.thumbnailPath",
           },
           {
@@ -33439,6 +33442,9 @@ export default {
             $ref: "#/parameters/rowFilter.supplierQuote.supplierQuoteType",
           },
           {
+            $ref: "#/parameters/rowFilter.supplierQuote.externalLinkId",
+          },
+          {
             $ref: "#/parameters/select",
           },
           {
@@ -33573,6 +33579,9 @@ export default {
             $ref: "#/parameters/rowFilter.supplierQuote.supplierQuoteType",
           },
           {
+            $ref: "#/parameters/rowFilter.supplierQuote.externalLinkId",
+          },
+          {
             $ref: "#/parameters/preferReturn",
           },
         ],
@@ -33659,6 +33668,9 @@ export default {
           },
           {
             $ref: "#/parameters/rowFilter.supplierQuote.supplierQuoteType",
+          },
+          {
+            $ref: "#/parameters/rowFilter.supplierQuote.externalLinkId",
           },
           {
             $ref: "#/parameters/body.supplierQuote",
@@ -75521,7 +75533,7 @@ export default {
           type: "string",
         },
         status: {
-          enum: ["Active", "Expired"],
+          enum: ["Active", "Expired", "Draft", "Declined", "Cancelled"],
           format: 'public."supplierQuoteStatus"',
           type: "string",
         },
@@ -75618,6 +75630,12 @@ export default {
         supplierQuoteType: {
           enum: ["Purchase", "Return", "Outside Processing"],
           format: 'public."purchaseOrderType"',
+          type: "string",
+        },
+        externalLinkId: {
+          description:
+            "Note:\nThis is a Foreign Key to `externalLink.id`.<fk table='externalLink' column='id'/>",
+          format: "uuid",
           type: "string",
         },
         thumbnailPath: {
@@ -77190,7 +77208,7 @@ export default {
         },
         status: {
           default: "Active",
-          enum: ["Active", "Expired"],
+          enum: ["Active", "Expired", "Draft", "Declined", "Cancelled"],
           format: 'public."supplierQuoteStatus"',
           type: "string",
         },
@@ -77289,6 +77307,12 @@ export default {
           default: "Purchase",
           enum: ["Purchase", "Return", "Outside Processing"],
           format: 'public."purchaseOrderType"',
+          type: "string",
+        },
+        externalLinkId: {
+          description:
+            "Note:\nThis is a Foreign Key to `externalLink.id`.<fk table='externalLink' column='id'/>",
+          format: "uuid",
           type: "string",
         },
       },
@@ -104641,6 +104665,12 @@ export default {
       in: "query",
       type: "string",
     },
+    "rowFilter.supplierQuotes.externalLinkId": {
+      name: "externalLinkId",
+      required: false,
+      in: "query",
+      type: "string",
+    },
     "rowFilter.supplierQuotes.thumbnailPath": {
       name: "thumbnailPath",
       required: false,
@@ -106563,6 +106593,12 @@ export default {
     },
     "rowFilter.supplierQuote.supplierQuoteType": {
       name: "supplierQuoteType",
+      required: false,
+      in: "query",
+      type: "string",
+    },
+    "rowFilter.supplierQuote.externalLinkId": {
+      name: "externalLinkId",
       required: false,
       in: "query",
       type: "string",

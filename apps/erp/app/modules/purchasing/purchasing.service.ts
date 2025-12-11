@@ -12,6 +12,7 @@ import type { GenericQueryFilters } from "~/utils/query";
 import { setGenericQueryFilters } from "~/utils/query";
 import { sanitize } from "~/utils/supabase";
 import { getCurrencyByCode } from "../accounting/accounting.service";
+import { upsertExternalLink } from "../shared/shared.service";
 import type { PurchaseInvoice } from "../invoicing/types";
 import type {
   purchaseOrderDeliveryValidator,
@@ -182,6 +183,27 @@ export async function getPurchaseOrder(
     .select("*")
     .eq("id", purchaseOrderId)
     .single();
+}
+
+export async function finalizeSupplierQuote(
+  client: SupabaseClient<Database>,
+  supplierQuoteId: string,
+  userId: string
+) {
+  const quoteUpdate = await client
+    .from("supplierQuote")
+    .update({
+      status: "Active",
+      updatedAt: today(getLocalTimeZone()).toString(),
+      updatedBy: userId,
+    })
+    .eq("id", supplierQuoteId);
+
+  if (quoteUpdate.error) {
+    return quoteUpdate;
+  }
+
+  return { data: null, error: null };
 }
 
 export async function getPurchaseOrders(
@@ -556,6 +578,17 @@ export async function getSupplierQuoteByInteractionId(
     .single();
 }
 
+export async function getSupplierQuoteByExternalId(
+  client: SupabaseClient<Database>,
+  externalId: string
+) {
+  return client
+    .from("supplierQuote")
+    .select("*")
+    .eq("externalLinkId", externalId)
+    .single();
+}
+
 export async function getSupplierQuotes(
   client: SupabaseClient<Database>,
   companyId: string,
@@ -913,6 +946,27 @@ export async function finalizePurchaseOrder(
       updatedBy: userId,
     })
     .eq("id", purchaseOrderId);
+}
+
+export async function sendSupplierQuote(
+  client: SupabaseClient<Database>,
+  supplierQuoteId: string,
+  userId: string
+) {
+  // Send keeps status as Draft, just updates timestamp
+  const quoteUpdate = await client
+    .from("supplierQuote")
+    .update({
+      updatedAt: today(getLocalTimeZone()).toString(),
+      updatedBy: userId,
+    })
+    .eq("id", supplierQuoteId);
+
+  if (quoteUpdate.error) {
+    return quoteUpdate;
+  }
+
+  return { data: null, error: null };
 }
 
 export async function updatePurchaseOrder(
@@ -1452,10 +1506,11 @@ export async function upsertSupplierQuote(
       .insert([
         {
           ...supplierQuote,
+          status: supplierQuote.status ?? "Draft",
           supplierInteractionId: supplierInteraction.data?.id,
         },
       ])
-      .select("id, supplierQuoteId")
+      .select("id, supplierQuoteId, externalLinkId")
       .single();
 
     if (insert.error) {
@@ -1465,18 +1520,44 @@ export async function upsertSupplierQuote(
     const supplierQuoteId = insert.data?.id;
     if (!supplierQuoteId) return insert;
 
+    // Only create external link if one doesn't exist
+    if (!insert.data.externalLinkId) {
+      const externalLink = await upsertExternalLink(client, {
+        documentType: "SupplierQuote",
+        documentId: supplierQuoteId,
+        supplierId: supplierQuote.supplierId,
+        expiresAt: supplierQuote.expirationDate,
+        companyId: supplierQuote.companyId,
+      });
+
+      if (externalLink.data) {
+        const update = await client
+          .from("supplierQuote")
+          .update({ externalLinkId: externalLink.data.id })
+          .eq("id", supplierQuoteId);
+
+        if (update.error) {
+          return update;
+        }
+      }
+    }
+
     return insert;
   } else {
     // Only update the exchange rate if the currency code has changed
     const existingQuote = await client
-      .from("quote")
-      .select("companyId, currencyCode")
+      .from("supplierQuote")
+      .select("companyId, currencyCode, status")
       .eq("id", supplierQuote.id)
       .single();
 
     if (existingQuote.error) return existingQuote;
 
-    const { companyId, currencyCode } = existingQuote.data;
+    const {
+      companyId,
+      currencyCode,
+      status: existingStatus,
+    } = existingQuote.data;
 
     if (
       supplierQuote.currencyCode &&
@@ -1496,11 +1577,11 @@ export async function upsertSupplierQuote(
       .from("supplierQuote")
       .update({
         ...sanitize(supplierQuote),
-        status: supplierQuote.expirationDate
-          ? today(getLocalTimeZone()).toString() > supplierQuote.expirationDate
+        status:
+          supplierQuote.expirationDate &&
+          today(getLocalTimeZone()).toString() > supplierQuote.expirationDate
             ? "Expired"
-            : "Active"
-          : "Active",
+            : supplierQuote.status ?? existingStatus ?? "Draft",
         updatedAt: today(getLocalTimeZone()).toString(),
       })
       .eq("id", supplierQuote.id);
