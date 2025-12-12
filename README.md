@@ -228,6 +228,23 @@ After installation you should be able run the apps locally.
 | Mailpit         | [http://localhost:54324](http://localhost:54324)                                                                   |
 | Edge Functions  | [http://localhost:54321/functions/v1/<function-name>](http://localhost:54321/functions/v1/<function-name>)         |
 
+
+### Code Formatting
+
+This project uses [Biome](https://biomejs.dev/) for code formatting and linting. To set up automatic formatting on save in VS Code:
+
+1. Install the [Biome VS Code extension](https://marketplace.visualstudio.com/items?itemName=biomejs.biome)
+
+2. Add the following to your VS Code settings (`.vscode/settings.json` or global settings):
+
+```json
+"editor.codeActionsOnSave": {
+  "source.organizeImports.biome": "explicit",
+  "source.fixAll.biome": "explicit"
+},
+"editor.defaultFormatter": "biomejs.biome"
+```
+
 ### Commands
 
 To add an edge function
