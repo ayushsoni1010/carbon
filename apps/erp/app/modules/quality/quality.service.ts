@@ -1654,7 +1654,6 @@ export async function upsertRisk(
       .from("riskRegister")
       .update({
         ...sanitize(data),
-        score: (data.severity ?? 0) * (data.likelihood ?? 0),
         updatedAt: new Date().toISOString()
       })
       .eq("id", risk.id)
@@ -1665,8 +1664,7 @@ export async function upsertRisk(
       .from("riskRegister")
       .insert([
         {
-          ...sanitize(risk),
-          score: (risk.severity ?? 0) * (risk.likelihood ?? 0)
+          ...sanitize(risk)
         }
       ])
       .select("id")

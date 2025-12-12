@@ -56,10 +56,8 @@ export default function NewRiskRoute() {
       initialValues={{
         title: "",
         description: "",
-        source: "GENERAL",
-        status: "OPEN",
-        severity: 1,
-        likelihood: 1,
+        source: "General",
+        status: "Open",
       }}
       onClose={onClose}
     />

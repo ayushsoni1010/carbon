@@ -8,6 +8,7 @@ import RiskRegisterForm from "~/modules/quality/ui/RiskRegister/RiskRegisterForm
 import { path } from "~/utils/path";
 import { validationError, validator } from "@carbon/form";
 import invariant from "tiny-invariant";
+import { useDisclosure } from "@carbon/react";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const { client } = await requirePermissions(request, {
@@ -50,6 +51,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       {
         data: null,
         error: result.error,
+        success: false,
       },
       { status: 500 }
     );
@@ -57,6 +59,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   return json({
     data: result.data,
+    success: true,
     error: null,
   });
 };
@@ -64,12 +67,27 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 export default function EditRiskRoute() {
   const { risk } = useLoaderData<typeof loader>();
   const navigate = useNavigate();
-  const onClose = () => navigate(path.to.risks);
+  const formDisclosure = useDisclosure({
+    defaultIsOpen: true,
+  });
+  const onClose = () => {
+    formDisclosure.onClose();
+    navigate(path.to.risks);
+  };
 
   return (
     <RiskRegisterForm
-      // @ts-ignore
-      initialValues={risk}
+      open={formDisclosure.isOpen}
+      initialValues={{
+        ...risk,
+        description: risk.description ?? undefined,
+        assigneeUserId: risk.assigneeUserId ?? undefined,
+        sourceId: risk.sourceId ?? undefined,
+        status: risk.status ?? undefined,
+        title: risk.title ?? undefined,
+        likelihood: risk.likelihood ?? undefined,
+        severity: risk.severity ?? undefined,
+      }}
       onClose={onClose}
     />
   );

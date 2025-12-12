@@ -35,7 +35,11 @@ import {
   recalculateJobRequirements,
   upsertJob
 } from "~/modules/production";
-import { JobDocuments, JobNotes } from "~/modules/production/ui/Jobs";
+import {
+  JobDocuments,
+  JobNotes,
+  JobRiskRegister,
+} from "~/modules/production/ui/Jobs";
 import PurchasingStatus from "~/modules/purchasing/ui/PurchaseOrder/PurchasingStatus";
 import { useItems } from "~/stores";
 import type { StorageItem } from "~/types";
@@ -172,6 +176,7 @@ export default function JobDetailsRoute() {
           )}
         </Await>
       </Suspense>
+      <JobRiskRegister jobId={jobId} />
       <CadModel
         isReadOnly={!permissions.can("update", "production")}
         metadata={{

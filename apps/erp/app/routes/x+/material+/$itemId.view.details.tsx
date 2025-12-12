@@ -10,7 +10,11 @@ import { Await, redirect, useParams } from "react-router";
 import { usePermissions, useRouteData } from "~/hooks";
 import type { ItemFile, MaterialSummary } from "~/modules/items";
 import { materialValidator, upsertMaterial } from "~/modules/items";
-import { ItemDocuments, ItemNotes } from "~/modules/items/ui/Item";
+import {
+  ItemDocuments,
+  ItemNotes,
+  ItemRiskRegister,
+} from "~/modules/items/ui/Item";
 import { setCustomFields } from "~/utils/form";
 import { path } from "~/utils/path";
 
@@ -91,6 +95,8 @@ export default function MaterialDetailsRoute() {
               )}
             </Await>
           </Suspense>
+
+          <ItemRiskRegister itemId={itemId} />
         </>
       )}
     </VStack>

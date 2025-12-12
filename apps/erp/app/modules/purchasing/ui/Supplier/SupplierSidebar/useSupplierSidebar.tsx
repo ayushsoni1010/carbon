@@ -5,7 +5,8 @@ import {
   LuCreditCard,
   LuLayoutList,
   LuMapPin,
-  LuPackageSearch
+  LuPackageSearch,
+  LuShieldAlert
 } from "react-icons/lu";
 import { useParams } from "react-router";
 import { usePermissions } from "~/hooks";
@@ -58,6 +59,12 @@ export function useSupplierSidebar({ contacts, locations }: Props) {
       role: ["employee"],
       icon: <LuCog />,
       shortcut: "Command+Shift+r"
+    },
+    {
+      name: "Risk Register",
+      to: path.to.supplierRisks(supplierId),
+      role: ["employee"],
+      icon: <LuShieldAlert />
     },
     {
       name: "Quotes",

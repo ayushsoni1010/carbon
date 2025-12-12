@@ -8,6 +8,7 @@ import ItemForm from "./ItemForm";
 import ItemNotes from "./ItemNotes";
 import ItemPlanningForm from "./ItemPlanningForm";
 import ItemPurchasingForm from "./ItemPurchasingForm";
+import ItemRiskRegister from "./ItemRiskRegister";
 import ItemSalePriceForm from "./ItemSalePriceForm";
 import MakeMethodTools from "./MakeMethodTools";
 import PickMethodForm from "./PickMethodForm";
@@ -25,6 +26,7 @@ export {
   ItemNotes,
   ItemPlanningForm,
   ItemPurchasingForm,
+  ItemRiskRegister,
   ItemSalePriceForm,
   MakeMethodTools,
   PickMethodForm,

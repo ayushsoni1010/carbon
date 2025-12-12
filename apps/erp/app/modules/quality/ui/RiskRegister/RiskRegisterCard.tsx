@@ -11,28 +11,29 @@ import {
   useDisclosure,
   Badge,
   toast,
+  Button,
 } from "@carbon/react";
 import { useEffect, useState, useCallback } from "react";
-import { LuPlus, LuShieldAlert, LuSettings2 } from "react-icons/lu";
+import { LuSettings2 } from "react-icons/lu";
 import { EmployeeAvatar } from "~/components";
+import { useUser } from "~/hooks";
 import type { Risk } from "~/modules/quality/types";
 import RiskRegisterForm from "./RiskRegisterForm";
-import { useUser } from "~/hooks";
 import type { riskSource } from "~/modules/quality/quality.models";
 
-type RiskRegisterProps = {
-  documentId: string;
-  documentType: (typeof riskSource)[number];
+type RiskRegisterCardProps = {
+  sourceId: string;
+  source: (typeof riskSource)[number];
 };
 
-export default function RiskRegister({
-  documentId,
-  documentType,
-}: RiskRegisterProps) {
+export default function RiskRegisterCard({
+  sourceId,
+  source,
+}: RiskRegisterCardProps) {
   const { carbon } = useCarbon();
   const { company } = useUser();
   const [risks, setRisks] = useState<Risk[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const formDisclosure = useDisclosure();
   const [selectedRisk, setSelectedRisk] = useState<Risk | undefined>(undefined);
 
@@ -43,8 +44,8 @@ export default function RiskRegister({
       .from("riskRegister")
       .select("*, assignee:assigneeUserId(id, firstName, lastName, avatarUrl)")
       .eq("companyId", company.id)
-      .eq("source", documentType)
-      .eq("sourceId", documentId)
+      .eq("source", source)
+      .eq("sourceId", sourceId)
       .order("createdAt", { ascending: false });
 
     if (error) {
@@ -56,7 +57,7 @@ export default function RiskRegister({
       setRisks(data as unknown as Risk[]);
     }
     setLoading(false);
-  }, [carbon, company?.id, documentId, documentType]);
+  }, [carbon, company?.id, sourceId, source]);
 
   useEffect(() => {
     fetchRisks();
@@ -74,22 +75,17 @@ export default function RiskRegister({
 
   return (
     <Card className="h-full">
-      <CardHeader>
-        <HStack className="justify-between">
-          <CardTitle className="flex items-center gap-2">
-            <LuShieldAlert className="h-5 w-5" />
-            Risk Register
-          </CardTitle>
-          <CardAction>
-            <IconButton
-              aria-label="Add Risk"
-              icon={<LuPlus />}
-              variant="ghost"
-              onClick={handleAdd}
-            />
-          </CardAction>
-        </HStack>
-      </CardHeader>
+      <HStack className="justify-between">
+        <CardHeader>
+          <CardTitle>Risk Register</CardTitle>
+        </CardHeader>
+        <CardAction>
+          <Button aria-label="Add Risk" variant="secondary" onClick={handleAdd}>
+            Add Risk
+          </Button>
+        </CardAction>
+      </HStack>
+
       <CardContent className="p-0">
         {loading ? (
           <div className="p-4">
@@ -100,11 +96,11 @@ export default function RiskRegister({
             No risks registered
           </div>
         ) : (
-          <div className="divide-y">
+          <div className="flex flex-col gap-4">
             {risks.map((risk) => (
               <div
                 key={risk.id}
-                className="p-4 flex items-start justify-between hover:bg-muted/50 transition-colors group"
+                className="p-4 flex items-start justify-between hover:bg-muted/50 transition-colors group rounded-md bg-muted/30 border border-border"
               >
                 <div className="flex flex-col gap-1">
                   <div className="flex items-center gap-2">
@@ -120,14 +116,17 @@ export default function RiskRegister({
                     >
                       {risk.status}
                     </Badge>
-                    <Badge variant="outline">{risk.source}</Badge>
                   </div>
-                  <p className="text-sm text-muted-foreground line-clamp-2">
-                    {risk.description}
-                  </p>
+                  {risk.description && (
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      {risk.description}
+                    </p>
+                  )}
                   <HStack className="mt-2 text-xs text-muted-foreground">
-                    <span>Severity: {risk.severity}</span>
-                    <span>Likelihood: {risk.likelihood}</span>
+                    {risk.severity && <span>Severity: {risk.severity}</span>}
+                    {risk.likelihood && (
+                      <span>Likelihood: {risk.likelihood}</span>
+                    )}
                     {risk.assigneeUserId && (
                       <div className="flex items-center gap-1 ml-2">
                         <span>Assignee:</span>
@@ -174,8 +173,8 @@ export default function RiskRegister({
               : {
                   title: "",
                   status: "Open",
-                  source: documentType ?? "General",
-                  sourceId: documentId,
+                  source: source,
+                  sourceId: sourceId,
                 }
           }
         />

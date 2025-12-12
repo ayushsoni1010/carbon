@@ -466,6 +466,7 @@ export const path = {
       generatePath(`${x}/sales/customer-portals/${id}`),
     customerShipping: (id: string) =>
       generatePath(`${x}/customer/${id}/shipping`),
+    customerRisks: (id: string) => generatePath(`${x}/customer/${id}/risks`),
     customerStatus: (id: string) =>
       generatePath(`${x}/sales/customer-statuses/${id}`),
     customerStatuses: `${x}/sales/customer-statuses`,
@@ -1409,6 +1410,7 @@ export const path = {
       generatePath(`${x}/supplier/${supplierId}/processes/${id}`),
     supplierProcesses: (id: string) =>
       generatePath(`${x}/supplier/${id}/processes`),
+    supplierRisks: (id: string) => generatePath(`${x}/supplier/${id}/risks`),
     supplierShipping: (id: string) =>
       generatePath(`${x}/supplier/${id}/shipping`),
     supplierQuote: (id: string) => generatePath(`${x}/supplier-quote/${id}`),

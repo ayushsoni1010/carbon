@@ -11,7 +11,11 @@ import { CadModel } from "~/components";
 import { usePermissions, useRouteData } from "~/hooks";
 import type { ItemFile, PartSummary } from "~/modules/items";
 import { partValidator, upsertPart } from "~/modules/items";
-import { ItemDocuments, ItemNotes } from "~/modules/items/ui/Item";
+import {
+  ItemDocuments,
+  ItemNotes,
+  ItemRiskRegister,
+} from "~/modules/items/ui/Item";
 import { setCustomFields } from "~/utils/form";
 import { path } from "~/utils/path";
 
@@ -90,6 +94,8 @@ export default function PartDetailsRoute() {
               )}
             </Await>
           </Suspense>
+
+          <ItemRiskRegister itemId={itemId} />
 
           <CadModel
             isReadOnly={!permissions.can("update", "parts")}

@@ -61,24 +61,24 @@ export const nonConformanceAssociationType = [
 ] as const;
 
 export const riskSource = [
-  "GENERAL",
-  "ITEM",
-  "ITEM_MASTER",
-  "QUOTE_LINE",
-  "JOB",
-  "WORK_CENTER",
-  "SUPPLIER",
-  "SUPPLIER_MASTER",
-  "CUSTOMER",
-  "CUSTOMER_MASTER",
+  "General",
+  "Item",
+  "Item Master",
+  "Quote Line",
+  "Job",
+  "Work Center",
+  "Supplier",
+  "Supplier Master",
+  "Customer",
+  "Customer Master",
 ] as const;
 
 export const riskStatus = [
-  "OPEN",
-  "IN_REVIEW",
-  "MITIGATING",
-  "CLOSED",
-  "ACCEPTED",
+  "Open",
+  "In Review",
+  "Mitigating",
+  "Closed",
+  "Accepted",
 ] as const;
 
 export const qualityDocumentStatus = ["Draft", "Active", "Archived"] as const;
@@ -310,7 +310,6 @@ export const requiredActionValidator = z.object({
   active: zfd.checkbox()
 });
 
-
 export const riskRegisterValidator = z.object({
   id: zfd.text(z.string().optional()),
   title: z.string().min(1, { message: "Title is required" }),
@@ -320,10 +319,5 @@ export const riskRegisterValidator = z.object({
   likelihood: zfd.numeric(z.number().min(1).max(5).optional()),
   status: z.enum(riskStatus),
   assigneeUserId: zfd.text(z.string().optional()),
-  itemId: zfd.text(z.string().optional()),
-  workCenterId: zfd.text(z.string().optional()),
-  supplierId: zfd.text(z.string().optional()),
-  customerId: zfd.text(z.string().optional()),
-  quoteLineId: zfd.text(z.string().optional()),
-  jobId: zfd.text(z.string().optional()),
+  sourceId: zfd.text(z.string().optional()),
 });

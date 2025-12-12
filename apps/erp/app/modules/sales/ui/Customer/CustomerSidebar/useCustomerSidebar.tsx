@@ -3,6 +3,7 @@ import {
   LuContact,
   LuCreditCard,
   LuMapPin,
+  LuShieldAlert,
   LuTruck
 } from "react-icons/lu";
 import {
@@ -60,6 +61,12 @@ export function useCustomerSidebar({ contacts, locations }: Props) {
       role: ["employee"],
       icon: <LuTruck />,
       shortcut: "Command+Shift+s"
+    },
+    {
+      name: "Risk Register",
+      to: path.to.customerRisks(customerId),
+      role: ["employee"],
+      icon: <LuShieldAlert />
     },
     {
       name: "RFQs",
