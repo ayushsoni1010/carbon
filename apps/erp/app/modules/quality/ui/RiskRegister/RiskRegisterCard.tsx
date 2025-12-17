@@ -15,7 +15,12 @@ import {
   useDisclosure
 } from "@carbon/react";
 import { useCallback, useEffect, useState } from "react";
-import { LuSettings2, LuTrash2 } from "react-icons/lu";
+import {
+  LuDice5,
+  LuSettings2,
+  LuTrash2,
+  LuTriangleAlert
+} from "react-icons/lu";
 import { Assignee, Empty } from "~/components";
 import { Enumerable } from "~/components/Enumerable";
 import { Confirm } from "~/components/Modals";
@@ -23,6 +28,7 @@ import { usePermissions, useUser } from "~/hooks";
 import type { riskSource } from "~/modules/quality/quality.models";
 import type { Risk } from "~/modules/quality/types";
 import { path } from "~/utils/path";
+import { RiskRating } from "./RiskRating";
 import RiskRegisterForm from "./RiskRegisterForm";
 import RiskStatus from "./RiskStatus";
 
@@ -136,15 +142,21 @@ export default function RiskRegisterCard({
                   assignee: selectedRisk.assignee ?? undefined,
                   sourceId: selectedRisk.sourceId ?? undefined,
                   itemId: selectedRisk.itemId ?? undefined,
-                  severity: selectedRisk.severity ?? undefined,
-                  likelihood: selectedRisk.likelihood ?? undefined
+                  severity: selectedRisk.severity
+                    ? selectedRisk.severity.toString()
+                    : "1",
+                  likelihood: selectedRisk.likelihood
+                    ? selectedRisk.likelihood.toString()
+                    : "1"
                 }
               : {
                   title: "",
                   status: "Open",
                   source: source,
                   sourceId: sourceId,
-                  itemId: itemId
+                  itemId: itemId,
+                  severity: "1",
+                  likelihood: "1"
                 }
           }
         />
@@ -201,10 +213,6 @@ function RiskRegisterCardItem({
               {risk.description}
             </p>
           )}
-          <HStack className="text-xs text-muted-foreground">
-            {risk.severity && <span>Severity: {risk.severity}</span>}
-            {risk.likelihood && <span>Likelihood: {risk.likelihood}</span>}
-          </HStack>
         </div>
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           <IconButton
@@ -241,6 +249,18 @@ function RiskRegisterCardItem({
         </div>
         <RiskStatus status={risk.status} />
         <Enumerable value={risk.source} />
+        {risk.severity && (
+          <Badge variant="gray" className="flex items-center gap-1">
+            <LuTriangleAlert />
+            <RiskRating rating={risk.severity} size="sm" />
+          </Badge>
+        )}
+        {risk.likelihood && (
+          <Badge variant="gray" className="flex items-center gap-1">
+            <LuDice5 />
+            <RiskRating rating={risk.likelihood} size="sm" />
+          </Badge>
+        )}
       </div>
     </div>
   );

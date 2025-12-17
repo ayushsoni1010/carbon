@@ -1,4 +1,5 @@
 import { requirePermissions } from "@carbon/auth/auth.server";
+import { flash } from "@carbon/auth/session.server";
 import { validationError, validator } from "@carbon/form";
 import { NotificationEvent } from "@carbon/notifications";
 import { useDisclosure } from "@carbon/react";
@@ -15,6 +16,7 @@ import { riskRegisterValidator } from "~/modules/quality/quality.models";
 import { getRisk, upsertRisk } from "~/modules/quality/quality.service";
 import RiskRegisterForm from "~/modules/quality/ui/RiskRegister/RiskRegisterForm";
 import { path } from "~/utils/path";
+import { error } from "../../../../../../packages/auth/src/utils/result";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
   const { client } = await requirePermissions(request, {
@@ -51,9 +53,15 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   const existingRisk = await getRisk(client, riskId);
   const previousAssignee = existingRisk.data?.assignee;
 
+  const severity = parseInt(validation.data.severity ?? "1", 10);
+  const likelihood = parseInt(validation.data.likelihood ?? "1", 10);
+
   const result = await upsertRisk(client, {
     ...validation.data,
     id: riskId,
+    assignee: validation.data.assignee || undefined,
+    severity,
+    likelihood,
     companyId,
     updatedBy: userId
   });
@@ -65,7 +73,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         error: result.error,
         success: false
       },
-      { status: 500 }
+      await flash(request, error(result.error, "Failed to update risk"))
     );
   }
 
@@ -113,8 +121,8 @@ export default function EditRiskRoute() {
         itemId: risk.itemId ?? undefined,
         source: risk.source,
         status: risk.status || "Open",
-        severity: risk.severity ?? undefined,
-        likelihood: risk.likelihood ?? undefined,
+        severity: risk.severity ? risk.severity.toString() : "1",
+        likelihood: risk.likelihood ? risk.likelihood.toString() : "1",
         assignee: risk.assignee ?? undefined,
         sourceId: risk.sourceId ?? undefined
       }}

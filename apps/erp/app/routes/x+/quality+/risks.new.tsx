@@ -1,4 +1,6 @@
+import { error, success } from "@carbon/auth";
 import { requirePermissions } from "@carbon/auth/auth.server";
+import { flash } from "@carbon/auth/session.server";
 import { validationError, validator } from "@carbon/form";
 import { NotificationEvent } from "@carbon/notifications";
 import { useDisclosure } from "@carbon/react";
@@ -23,8 +25,14 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
   const { id: _, ...d } = validation.data;
 
+  const severity = parseInt(d.severity ?? "1", 10);
+  const likelihood = parseInt(d.likelihood ?? "1", 10);
+
   const result = await upsertRisk(client, {
     ...d,
+    assignee: d.assignee ?? userId,
+    severity,
+    likelihood,
     companyId,
     createdBy: userId
   });
@@ -36,7 +44,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
         success: false,
         error: result.error
       },
-      { status: 500 }
+      await flash(request, error(result.error, "Failed to create risk"))
     );
   }
 
@@ -58,11 +66,14 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     }
   }
 
-  return data({
-    data: result.data,
-    success: true,
-    error: null
-  });
+  return data(
+    {
+      data: result.data,
+      success: true,
+      error: null
+    },
+    await flash(request, success("Risk created successfully"))
+  );
 };
 
 export default function NewRiskRoute() {
@@ -80,7 +91,9 @@ export default function NewRiskRoute() {
         title: "",
         description: "",
         source: "General",
-        status: "Open"
+        status: "Open",
+        severity: "1",
+        likelihood: "1"
       }}
       onClose={onClose}
     />

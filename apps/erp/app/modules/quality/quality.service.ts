@@ -1639,11 +1639,21 @@ export async function upsertQualityDocumentStep(
 export async function upsertRisk(
   client: SupabaseClient<Database>,
   risk:
-    | (Omit<z.infer<typeof riskRegisterValidator>, "id"> & {
+    | (Omit<
+        z.infer<typeof riskRegisterValidator>,
+        "id" | "severity" | "likelihood"
+      > & {
+        severity: number;
+        likelihood: number;
         companyId: string;
         createdBy: string;
       })
-    | (Omit<z.infer<typeof riskRegisterValidator>, "id"> & {
+    | (Omit<
+        z.infer<typeof riskRegisterValidator>,
+        "id" | "severity" | "likelihood"
+      > & {
+        severity: number;
+        likelihood: number;
         id: string;
         updatedBy: string; // This might be used for history/tracking if added
       })

@@ -22,6 +22,7 @@ import { riskSource, riskStatus } from "~/modules/quality/quality.models";
 import type { Risk } from "~/modules/quality/types";
 import { useItems, usePeople } from "~/stores";
 import { path } from "~/utils/path";
+import { RiskRating } from "./RiskRating";
 import RiskStatus from "./RiskStatus";
 
 type RiskRegistersTableProps = {
@@ -126,14 +127,14 @@ const RiskRegistersTable = memo(({ data, count }: RiskRegistersTableProps) => {
       {
         accessorKey: "severity",
         header: "Severity",
-        cell: (item) => item.getValue<number>(),
+        cell: ({ row }) => <RiskRating rating={row.original.severity ?? 1} />,
         meta: {
           icon: <LuTriangleAlert />,
           filter: {
             type: "static",
             options: [1, 2, 3, 4, 5].map((s) => ({
               value: s.toString(),
-              label: s
+              label: <RiskRating rating={s} />
             }))
           },
           pluralHeader: "Severities"
@@ -142,14 +143,14 @@ const RiskRegistersTable = memo(({ data, count }: RiskRegistersTableProps) => {
       {
         accessorKey: "likelihood",
         header: "Likelihood",
-        cell: (item) => item.getValue<number>(),
+        cell: ({ row }) => <RiskRating rating={row.original.likelihood ?? 1} />,
         meta: {
           icon: <LuDice5 />,
           filter: {
             type: "static",
             options: [1, 2, 3, 4, 5].map((s) => ({
               value: s.toString(),
-              label: s
+              label: <RiskRating rating={s} />
             }))
           }
         }

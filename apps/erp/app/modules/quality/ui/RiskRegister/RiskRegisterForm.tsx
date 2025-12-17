@@ -31,10 +31,14 @@ import {
   riskStatus
 } from "~/modules/quality/quality.models";
 import { path } from "~/utils/path";
+import { RiskRating } from "./RiskRating";
 import RiskStatus from "./RiskStatus";
 
 type RiskRegisterFormProps = {
-  initialValues: z.infer<typeof riskRegisterValidator>;
+  initialValues: Omit<
+    z.infer<typeof riskRegisterValidator>,
+    "severity" | "likelihood"
+  > & { severity: string; likelihood: string };
   type?: "modal" | "drawer";
   open?: boolean;
   onClose: () => void;
@@ -122,17 +126,21 @@ const RiskRegisterForm = ({
                 />
 
                 <HStack spacing={4} className="w-full">
-                  <NumberInput
+                  <Select
                     name="severity"
-                    label="Severity (1-5)"
-                    minValue={1}
-                    maxValue={5}
+                    label="Severity"
+                    options={Array.from({ length: 5 }, (_, index) => ({
+                      value: (index + 1).toString(),
+                      label: <RiskRating rating={index + 1} />
+                    }))}
                   />
-                  <NumberInput
+                  <Select
                     name="likelihood"
-                    label="Likelihood (1-5)"
-                    minValue={1}
-                    maxValue={5}
+                    label="Likelihood"
+                    options={Array.from({ length: 5 }, (_, index) => ({
+                      value: (index + 1).toString(),
+                      label: <RiskRating rating={index + 1} />
+                    }))}
                   />
                 </HStack>
 
