@@ -4,9 +4,11 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { memo, useCallback, useMemo, useState } from "react";
 import {
   LuAlignLeft,
+  LuDice5,
   LuPencil,
   LuShapes,
   LuSquareStack,
+  LuStar,
   LuTrash,
   LuTriangleAlert,
   LuUser
@@ -20,7 +22,6 @@ import { riskSource, riskStatus } from "~/modules/quality/quality.models";
 import type { Risk } from "~/modules/quality/types";
 import { useItems, usePeople } from "~/stores";
 import { path } from "~/utils/path";
-import { getReadableIdWithRevision } from "~/utils/string";
 import RiskStatus from "./RiskStatus";
 
 type RiskRegistersTableProps = {
@@ -29,6 +30,7 @@ type RiskRegistersTableProps = {
 };
 
 const defaultColumnVisibility = {
+  itemId: false,
   description: false,
   createdAt: true,
   updatedAt: false
@@ -60,7 +62,7 @@ const RiskRegistersTable = memo(({ data, count }: RiskRegistersTableProps) => {
   const columns = useMemo<ColumnDef<Risk>[]>(() => {
     const defaultColumns: ColumnDef<Risk>[] = [
       {
-        accessorKey: "itemId",
+        accessorKey: "title",
         header: "Title",
         cell: ({ row }) => (
           <Hyperlink to={row.original.id!} className="font-medium">
@@ -73,9 +75,14 @@ const RiskRegistersTable = memo(({ data, count }: RiskRegistersTableProps) => {
               )}
             </div>
           </Hyperlink>
-        ),
+        )
+      },
+      {
+        accessorKey: "itemId",
+        header: "Item",
+        cell: ({ row }) => getItemReadableId(items, row.original.itemId),
         meta: {
-          icon: <LuAlignLeft />,
+          icon: <LuSquareStack />,
           filter: {
             type: "static",
             options: items.map((item) => ({
@@ -85,7 +92,6 @@ const RiskRegistersTable = memo(({ data, count }: RiskRegistersTableProps) => {
           }
         }
       },
-
       {
         accessorKey: "source",
         header: "Source",
@@ -106,25 +112,47 @@ const RiskRegistersTable = memo(({ data, count }: RiskRegistersTableProps) => {
         header: "Status",
         cell: ({ row }) => <RiskStatus status={row.original.status} />,
         meta: {
-          icon: <LuTriangleAlert />,
+          icon: <LuStar />,
           filter: {
             type: "static",
             options: riskStatus.map((s) => ({
               value: s,
               label: <RiskStatus status={s} />
             }))
-          }
+          },
+          pluralHeader: "Statuses"
         }
       },
       {
         accessorKey: "severity",
         header: "Severity",
-        cell: (item) => item.getValue<number>()
+        cell: (item) => item.getValue<number>(),
+        meta: {
+          icon: <LuTriangleAlert />,
+          filter: {
+            type: "static",
+            options: [1, 2, 3, 4, 5].map((s) => ({
+              value: s.toString(),
+              label: s
+            }))
+          },
+          pluralHeader: "Severities"
+        }
       },
       {
         accessorKey: "likelihood",
         header: "Likelihood",
-        cell: (item) => item.getValue<number>()
+        cell: (item) => item.getValue<number>(),
+        meta: {
+          icon: <LuDice5 />,
+          filter: {
+            type: "static",
+            options: [1, 2, 3, 4, 5].map((s) => ({
+              value: s.toString(),
+              label: s
+            }))
+          }
+        }
       },
       {
         id: "assignee",
