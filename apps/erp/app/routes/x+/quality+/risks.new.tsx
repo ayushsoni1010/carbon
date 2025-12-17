@@ -1,6 +1,8 @@
 import { requirePermissions } from "@carbon/auth/auth.server";
 import { validationError, validator } from "@carbon/form";
+import { NotificationEvent } from "@carbon/notifications";
 import { useDisclosure } from "@carbon/react";
+import { tasks } from "@trigger.dev/sdk";
 import { type ActionFunctionArgs, data, useNavigate } from "react-router";
 import { riskRegisterValidator } from "~/modules/quality/quality.models";
 import { upsertRisk } from "~/modules/quality/quality.service";
@@ -36,6 +38,24 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       },
       { status: 500 }
     );
+  }
+
+  // Notify the assignee if one was set
+  if (d.assignee && result.data?.id) {
+    try {
+      await tasks.trigger("notify", {
+        companyId,
+        documentId: result.data.id,
+        event: NotificationEvent.RiskAssignment,
+        recipient: {
+          type: "user",
+          userId: d.assignee
+        },
+        from: userId
+      });
+    } catch (err) {
+      console.error("Failed to notify assignee", err);
+    }
   }
 
   return data({

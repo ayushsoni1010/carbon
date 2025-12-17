@@ -61,7 +61,7 @@ export function useSupplierSidebar({ contacts, locations }: Props) {
       shortcut: "Command+Shift+r"
     },
     {
-      name: "Risk Register",
+      name: "Risks",
       to: path.to.supplierRisks(supplierId),
       role: ["employee"],
       icon: <LuShieldAlert />

@@ -64,6 +64,7 @@ export const notifyTask = task({
         case NotificationEvent.PurchaseInvoiceAssignment:
         case NotificationEvent.PurchaseOrderAssignment:
         case NotificationEvent.QuoteAssignment:
+        case NotificationEvent.RiskAssignment:
         case NotificationEvent.SalesOrderAssignment:
         case NotificationEvent.SalesRfqAssignment:
         case NotificationEvent.SalesRfqReady:
@@ -288,6 +289,20 @@ export const notifyTask = task({
 
           const submittedBy = suggestion.data.user?.fullName || "Anonymous";
           return `New suggestion submitted by ${submittedBy}`;
+
+        case NotificationEvent.RiskAssignment:
+          const risk = await client
+            .from("riskRegister")
+            .select("*")
+            .eq("id", documentId)
+            .single();
+
+          if (risk.error) {
+            console.error("Failed to get risk", risk.error);
+            throw risk.error;
+          }
+
+          return `Risk "${risk?.data?.title}" assigned to you`;
 
         default:
           return null;

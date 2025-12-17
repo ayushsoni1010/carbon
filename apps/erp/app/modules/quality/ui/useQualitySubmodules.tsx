@@ -5,9 +5,9 @@ import {
   LuListChecks,
   LuOctagonX,
   LuShapes,
+  LuShieldAlert,
   LuShieldX,
   LuSquareCheck,
-  LuTriangleAlert,
   LuWorkflow
 } from "react-icons/lu";
 import { usePermissions } from "~/hooks";
@@ -35,7 +35,7 @@ const qualityRoutes: AuthenticatedRouteGroup[] = [
       {
         name: "Risks",
         to: path.to.risks,
-        icon: <LuTriangleAlert />,
+        icon: <LuShieldAlert />,
         table: "riskRegister"
       }
       // {

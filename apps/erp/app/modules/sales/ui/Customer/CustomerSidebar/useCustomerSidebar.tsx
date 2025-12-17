@@ -63,7 +63,7 @@ export function useCustomerSidebar({ contacts, locations }: Props) {
       shortcut: "Command+Shift+s"
     },
     {
-      name: "Risk Register",
+      name: "Risks",
       to: path.to.customerRisks(customerId),
       role: ["employee"],
       icon: <LuShieldAlert />

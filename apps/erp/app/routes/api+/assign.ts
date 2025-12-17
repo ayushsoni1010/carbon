@@ -39,7 +39,6 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     if (
-      table === "nonConformanceInvestigationTask" ||
       table === "nonConformanceActionTask" ||
       table === "nonConformanceApprovalTask"
     ) {
@@ -109,6 +108,8 @@ function getNotificationEvent(table: string): NotificationEvent | null {
       return NotificationEvent.PurchaseOrderAssignment;
     case "purchaseInvoice":
       return NotificationEvent.PurchaseInvoiceAssignment;
+    case "riskRegister":
+      return NotificationEvent.RiskAssignment;
     case "supplierQuote":
       return NotificationEvent.SupplierQuoteAssignment;
     case "stockTransfer":

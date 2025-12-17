@@ -22,6 +22,7 @@ const payloadSchema = z.object({
     NotificationEvent.PurchaseOrderAssignment,
     NotificationEvent.QuoteAssignment,
     NotificationEvent.QuoteExpired,
+    NotificationEvent.RiskAssignment,
     NotificationEvent.SalesOrderAssignment,
     NotificationEvent.SalesRfqAssignment,
     NotificationEvent.SalesRfqReady,

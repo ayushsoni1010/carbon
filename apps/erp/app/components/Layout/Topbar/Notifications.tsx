@@ -30,6 +30,7 @@ import {
   LuListChecks,
   LuMailCheck,
   LuMessageSquare,
+  LuShieldAlert,
   LuShieldX,
   LuShoppingCart
 } from "react-icons/lu";
@@ -269,6 +270,14 @@ function GenericNotification({
         <Notification
           icon={<RiProgress4Line />}
           to={path.to.quoteDetails(id)}
+          {...props}
+        />
+      );
+    case NotificationEvent.RiskAssignment:
+      return (
+        <Notification
+          icon={<LuShieldAlert />}
+          to={path.to.risk(id)}
           {...props}
         />
       );

@@ -1,6 +1,8 @@
 import { requirePermissions } from "@carbon/auth/auth.server";
 import { validationError, validator } from "@carbon/form";
+import { NotificationEvent } from "@carbon/notifications";
 import { useDisclosure } from "@carbon/react";
+import { tasks } from "@trigger.dev/sdk";
 import {
   type ActionFunctionArgs,
   data,
@@ -43,9 +45,15 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     return validationError(validation.error);
   }
 
+  const riskId = validation.data.id!;
+
+  // Get the previous assignee to check if it changed
+  const existingRisk = await getRisk(client, riskId);
+  const previousAssignee = existingRisk.data?.assignee;
+
   const result = await upsertRisk(client, {
     ...validation.data,
-    id: validation.data.id!,
+    id: riskId,
     companyId,
     updatedBy: userId
   });
@@ -59,6 +67,25 @@ export const action = async ({ request }: ActionFunctionArgs) => {
       },
       { status: 500 }
     );
+  }
+
+  // Notify the new assignee if it changed
+  const newAssignee = validation.data.assignee;
+  if (newAssignee && newAssignee !== previousAssignee) {
+    try {
+      await tasks.trigger("notify", {
+        companyId,
+        documentId: riskId,
+        event: NotificationEvent.RiskAssignment,
+        recipient: {
+          type: "user",
+          userId: newAssignee
+        },
+        from: userId
+      });
+    } catch (err) {
+      console.error("Failed to notify assignee", err);
+    }
   }
 
   return data({

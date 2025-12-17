@@ -60,23 +60,22 @@ const RiskRegistersTable = memo(({ data, count }: RiskRegistersTableProps) => {
   const columns = useMemo<ColumnDef<Risk>[]>(() => {
     const defaultColumns: ColumnDef<Risk>[] = [
       {
-        accessorKey: "title",
+        accessorKey: "itemId",
         header: "Title",
         cell: ({ row }) => (
           <Hyperlink to={row.original.id!} className="font-medium">
-            {row.original.title}
+            <div className="flex flex-col gap-1">
+              <span>{row.original.title}</span>
+              {row.original.itemId && (
+                <span className="text-muted-foreground text-xs">
+                  {getItemReadableId(items, row.original.itemId)}
+                </span>
+              )}
+            </div>
           </Hyperlink>
         ),
         meta: {
-          icon: <LuAlignLeft />
-        }
-      },
-      {
-        accessorKey: "itemId",
-        header: "Item",
-        cell: ({ row }) => getItemReadableId(items, row.original.itemId),
-        meta: {
-          icon: <LuSquareStack />,
+          icon: <LuAlignLeft />,
           filter: {
             type: "static",
             options: items.map((item) => ({
@@ -86,6 +85,7 @@ const RiskRegistersTable = memo(({ data, count }: RiskRegistersTableProps) => {
           }
         }
       },
+
       {
         accessorKey: "source",
         header: "Source",
@@ -145,7 +145,7 @@ const RiskRegistersTable = memo(({ data, count }: RiskRegistersTableProps) => {
       }
     ];
     return defaultColumns;
-  }, [people]);
+  }, [people, items]);
 
   const renderContextMenu = useCallback<(row: Risk) => JSX.Element>(
     (row) => (
