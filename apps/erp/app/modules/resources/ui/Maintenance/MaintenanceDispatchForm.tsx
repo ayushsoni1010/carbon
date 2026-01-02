@@ -79,6 +79,10 @@ const MaintenanceDispatchForm = ({
     initialValues?.oeeImpact ?? "No Impact"
   );
 
+  const [hasWorkCenter, setHasWorkCenter] = useState<boolean>(
+    !!initialValues?.workCenterId
+  );
+
   const showFailureModes =
     oeeImpactValue === "Down" || oeeImpactValue === "Impact";
 
@@ -165,8 +169,19 @@ const MaintenanceDispatchForm = ({
                   label: <MaintenanceSeverity severity={severity} />
                 }))}
               />
-              <WorkCenter name="workCenterId" label="Work Center" />
-              <Location name="locationId" label="Location" />
+              <WorkCenter
+                name="workCenterId"
+                label="Work Center"
+                onChange={(option) => {
+                  setHasWorkCenter(!!option?.value);
+                }}
+              />
+              <Location
+                name="locationId"
+                label="Location"
+                value={hasWorkCenter ? null : undefined}
+                isReadOnly={hasWorkCenter}
+              />
               <Select
                 name="oeeImpact"
                 label="OEE Impact"
@@ -180,6 +195,11 @@ const MaintenanceDispatchForm = ({
                   }
                 }}
               />
+              <DateTimePicker
+                name="plannedStartTime"
+                label="Planned Start Time"
+              />
+              <DateTimePicker name="plannedEndTime" label="Planned End Time" />
               {showFailureModes ? (
                 <Select
                   name="suspectedFailureModeId"
@@ -193,11 +213,6 @@ const MaintenanceDispatchForm = ({
               ) : (
                 <div />
               )}
-              <DateTimePicker
-                name="plannedStartTime"
-                label="Planned Start Time"
-              />
-              <DateTimePicker name="plannedEndTime" label="Planned End Time" />
             </div>
           </VStack>
         </CardContent>
