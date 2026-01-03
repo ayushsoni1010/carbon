@@ -196,13 +196,21 @@ const getItemFiles = async (
   companyId: string,
   items: Array<{ itemId: string }>
 ) => {
-  const elems = items.map((el) =>
-    client.storage.from("private").list(`${companyId}/parts/${el.itemId}`)
-  );
+  const getFile = async (id: string) => {
+    const res = await client.storage
+      .from("private")
+      .list(`${companyId}/parts/${id}`);
+
+    if (res.error || !res.data) return null;
+
+    return res.data.map((f) => ({ ...f, bucket: "parts", itemId: id }));
+  };
+
+  const elems = items.map((el) => getFile(el.itemId));
 
   const results = await Promise.all(elems);
 
-  return results.flatMap((res) => res.data ?? []);
+  return results.filter((f) => f !== null).flat();
 };
 
 export async function getJobFiles(
@@ -229,7 +237,7 @@ export async function getJobFiles(
         bucket: "opportunity-line"
       })) || []),
       ...(jobFiles.data?.map((f) => ({ ...f, bucket: "job" })) || []),
-      ...(itemFiles.map((f) => ({ ...f, bucket: "parts" })) || [])
+      ...itemFiles
     ];
   } else {
     const [jobFiles, itemFiles] = await Promise.all([
@@ -239,7 +247,7 @@ export async function getJobFiles(
 
     return [
       ...(jobFiles.data?.map((f) => ({ ...f, bucket: "job" })) || []),
-      ...(itemFiles.map((f) => ({ ...f, bucket: "parts" })) || [])
+      ...itemFiles
     ];
   }
 }
