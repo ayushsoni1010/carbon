@@ -773,7 +773,7 @@ export async function getQuotes(
 
   if (args.search) {
     query = query.or(
-      `quoteId.ilike.%${args.search}%,name.ilike.%${args.search}%,customerReference.ilike%${args.search}%`
+      `quoteId.ilike.%${args.search}%,customerReference.ilike.%${args.search}%`
     );
   }
 
@@ -1385,7 +1385,7 @@ export async function getSalesRFQs(
 
   if (args.search) {
     query = query.or(
-      `rfqId.ilike.%${args.search}%,name.ilike.%${args.search}%,customerReference.ilike%${args.search}%`
+      `rfqId.ilike.%${args.search}%,customerReference.ilike.%${args.search}%`
     );
   }
 
