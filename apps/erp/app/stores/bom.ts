@@ -1,5 +1,17 @@
-import { atom } from "nanostores";
-import { useNanoStore } from "~/hooks";
+import { useUrlParams } from "~/hooks";
 
-const $bomStore = atom<string | null>(null);
-export const useBom = () => useNanoStore($bomStore, "bom");
+const PARAM_KEY = "material_id";
+
+export const useBom = () => {
+  const [params, setParams] = useUrlParams();
+
+  const id = params.get(PARAM_KEY);
+
+  const setId = (id: string | null) => {
+    setParams({
+      [PARAM_KEY]: id || undefined
+    });
+  };
+
+  return [id, setId] as const;
+};

@@ -67,6 +67,7 @@ const JobBoMExplorer = ({ method }: JobBoMExplorerProps) => {
     selectNode,
     collapseAllBelowDepth,
     scrollToNode,
+    deselectAllNodes,
     virtualizer
   } = useTree({
     tree: method,
@@ -90,8 +91,13 @@ const JobBoMExplorer = ({ method }: JobBoMExplorerProps) => {
   });
 
   const [selectedMaterialId, setSelectedMaterialId] = useBom();
-  // biome-ignore lint/correctness/useExhaustiveDependencies: suppressed due to migration
+  // biome-ignore lint/correctness/useExhaustiveDependencies: supress
   useEffect(() => {
+    if (location.pathname === path.to.jobDetails(jobId!)) {
+      deselectAllNodes();
+      return;
+    }
+
     if (selectedMaterialId) {
       const node = method.find(
         (m) => m.data.methodMaterialId === selectedMaterialId
@@ -107,7 +113,7 @@ const JobBoMExplorer = ({ method }: JobBoMExplorerProps) => {
         selectNode(node.id);
       }
     }
-  }, [selectedMaterialId, methodId]);
+  }, [selectedMaterialId, methodId, location.pathname, jobId]);
 
   return (
     <VStack className="flex-1 h-full w-full">
