@@ -1,5 +1,5 @@
 import { getCarbonServiceRole } from "@carbon/auth";
-import axios, { type AxiosInstance, isAxiosError } from "axios";
+import axios, { type AxiosInstance } from "axios";
 import type z from "zod";
 import type { LinearIssueSchema } from "./service";
 import { getLinearIntegration } from "./service";
@@ -45,6 +45,22 @@ export class LinearClient {
     return {
       Authorization: metadata.apiKey
     };
+  }
+
+  async healthcheck(companyId: string) {
+    try {
+      const response = await this.instance.request({
+        method: "POST",
+        headers: await this.getAuthHeaders(companyId),
+        data: {
+          query: `query { viewer { id } }`
+        }
+      });
+
+      return response.status === 200 && !response.data.errors?.length;
+    } catch {
+      return false;
+    }
   }
 
   async listTeams(companyId: string) {
@@ -109,10 +125,8 @@ export class LinearClient {
 
       return response.data.data.issues.nodes.at(0) || null;
     } catch (error) {
-      if (isAxiosError(error)) {
-        console.dir(error.response.data, { depth: null });
-        console.dir(error.config.data, { depth: null });
-      }
+      console.error("Error getting Linear issue by ID:", error);
+      return null;
     }
   }
 
@@ -242,10 +256,7 @@ export class LinearClient {
 
       return response.data.data.issueUpdate.issue;
     } catch (error) {
-      if (isAxiosError(error)) {
-        console.dir(error.response.data, { depth: null });
-        console.dir(error.config.data, { depth: null });
-      }
+      console.error("Error updating Linear issue:", error);
     }
   }
 
@@ -340,3 +351,10 @@ export class LinearClient {
     }
   }
 }
+
+let instance: LinearClient | null = null;
+
+export const getLinearClient = () => {
+  if (!instance) instance = new LinearClient();
+  return instance;
+};

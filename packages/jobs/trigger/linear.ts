@@ -1,13 +1,13 @@
 import { getCarbonServiceRole } from "@carbon/auth";
 import {
   getCompanyEmployees,
-  LinearClient,
-  linkActionToLinearIssue,
+  getLinearClient,
+  linkActionToLinearIssue
 } from "@carbon/ee/linear";
 import { task } from "@trigger.dev/sdk";
 import { z } from "zod";
 
-const linear = new LinearClient();
+const linear = getLinearClient()
 
 // Schema for webhook payload - we only need the issue ID since we fetch full details from Linear
 export const syncIssueFromLinearSchema = z.object({

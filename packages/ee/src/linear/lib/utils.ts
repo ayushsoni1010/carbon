@@ -15,7 +15,6 @@ type CarbonTaskStatus = Database["public"]["Enums"]["nonConformanceTaskStatus"];
 export const mapLinearStatusToCarbonStatus = (
   status: LinearWorkStateType
 ): CarbonTaskStatus => {
-  console.log("status", status);
   switch (status) {
     case LinearWorkStateType.Started:
       return "In Progress";

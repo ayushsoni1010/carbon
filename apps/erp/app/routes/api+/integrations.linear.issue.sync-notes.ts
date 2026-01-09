@@ -1,13 +1,13 @@
 import { requirePermissions } from "@carbon/auth/auth.server";
 import {
+  getLinearClient,
   getLinearIssueFromExternalId,
-  LinearClient,
   type TiptapDocument,
   tiptapToMarkdown
 } from "@carbon/ee/linear";
 import { type ActionFunction, data } from "react-router";
 
-const linear = new LinearClient();
+const linear = getLinearClient();
 
 export const action: ActionFunction = async ({ request }) => {
   const { companyId, client } = await requirePermissions(request, {});

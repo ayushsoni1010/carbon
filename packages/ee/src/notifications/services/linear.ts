@@ -2,15 +2,15 @@ import { getUser } from "@carbon/auth";
 import type { Database } from "@carbon/database";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
+  getLinearClient,
   getLinearIssueFromExternalId,
-  LinearClient,
   mapCarbonStatusToLinearStatus,
   type TiptapDocument,
   tiptapToMarkdown
 } from "../../linear/lib";
 import type { NotificationEvent, NotificationService } from "../types";
 
-const linear = new LinearClient();
+const linear = getLinearClient();
 
 /**
  * Linear Notification Service

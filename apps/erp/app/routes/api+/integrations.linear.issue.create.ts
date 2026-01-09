@@ -2,13 +2,13 @@ import { getAppUrl } from "@carbon/auth";
 import { requirePermissions } from "@carbon/auth/auth.server";
 import {
   getCompanyEmployees,
-  LinearClient,
+  getLinearClient,
   linkActionToLinearIssue
 } from "@carbon/ee/linear";
 import { type ActionFunction, data, type LoaderFunction } from "react-router";
 import { getIssueAction } from "~/modules/quality/quality.service";
 
-const linear = new LinearClient();
+const linear = getLinearClient();
 
 export const action: ActionFunction = async ({ request }) => {
   try {
