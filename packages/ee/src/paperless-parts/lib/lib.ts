@@ -2151,7 +2151,7 @@ export async function createPartFromComponent(
       type: "Part",
       replenishmentSystem: isPurchased ? "Buy" : "Make",
       defaultMethodType: isPurchased ? "Buy" : "Make",
-      itemTrackingType: "Inventory",
+      itemTrackingType: "Non-Inventory",
       unitOfMeasureCode: "EA",
       active: true,
       companyId,
