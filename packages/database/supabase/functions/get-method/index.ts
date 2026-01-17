@@ -34,6 +34,7 @@ import {
     getNextRevisionSequence,
     getNextSequence,
 } from "../shared/get-next-sequence.ts";
+import { KyselyDatabase } from "../lib/postgres/index.js";
 
 const pool = getConnectionPool(1);
 const db = getDatabaseClient<DB>(pool);
@@ -756,6 +757,16 @@ serve(async (req: Request) => {
                 }
               }
 
+              // Get scrap percentage for this item
+              const itemReplenishment = await trx
+                .selectFrom("itemReplenishment")
+                .select("scrapPercentage")
+                .where("itemId", "=", itemId)
+                .executeTakeFirst();
+              const itemScrapPercentage = Number(
+                itemReplenishment?.scrapPercentage ?? 0
+              );
+
               return {
                 jobId,
                 jobMakeMethodId: parentJobMakeMethodId!,
@@ -781,6 +792,7 @@ serve(async (req: Request) => {
                 requiresBatchTracking,
                 unitOfMeasureCode,
                 unitCost,
+                itemScrapPercentage,
                 companyId,
                 createdBy: userId,
                 customFields: {},
@@ -970,7 +982,7 @@ serve(async (req: Request) => {
           return acc;
         }, {});
 
-        await db.transaction().execute(async (trx) => {
+        await db.transaction().execute(async (trx: Transaction) => {
           // Delete existing jobMakeMethodOperation, jobMakeMethodMaterial
           await Promise.all([
             trx
@@ -1135,33 +1147,47 @@ serve(async (req: Request) => {
 
             const mapMethodMaterialToJobMaterial = async (
               child: MethodTreeItem
-            ) => ({
-              jobId: jobMakeMethod.data?.jobId!,
-              jobMakeMethodId: parentJobMakeMethodId!,
-              jobOperationId:
-                methodOperationsToJobOperations[child.data.operationId],
-              itemId: child.data.itemId,
-              kit: child.data.kit,
-              itemType: child.data.itemType,
-              methodType: child.data.methodType,
-              order: child.data.order,
-              description: child.data.description,
-              quantity: child.data.quantity,
-              requiresBatchTracking: child.data.itemTrackingType === "Batch",
-              requiresSerialTracking: child.data.itemTrackingType === "Serial",
-              unitOfMeasureCode: child.data.unitOfMeasureCode,
-              unitCost: child.data.unitCost,
-              shelfId: await getShelfId(
-                trx,
-                child.data.itemId,
-                job.data?.locationId ?? "",
-                // @ts-ignore
-                child.data.shelfIds?.[job.data.locationId] ?? undefined
-              ),
-              companyId,
-              createdBy: userId,
-              customFields: {},
-            });
+            ) => {
+              // Get scrap percentage for this item
+              const itemReplenishment = await trx
+                .selectFrom("itemReplenishment")
+                .select("scrapPercentage")
+                .where("itemId", "=", child.data.itemId)
+                .executeTakeFirst();
+              const itemScrapPercentage = Number(
+                itemReplenishment?.scrapPercentage ?? 0
+              );
+
+              return {
+                jobId: jobMakeMethod.data?.jobId!,
+                jobMakeMethodId: parentJobMakeMethodId!,
+                jobOperationId:
+                  methodOperationsToJobOperations[child.data.operationId],
+                itemId: child.data.itemId,
+                kit: child.data.kit,
+                itemType: child.data.itemType,
+                methodType: child.data.methodType,
+                order: child.data.order,
+                description: child.data.description,
+                quantity: child.data.quantity,
+                requiresBatchTracking: child.data.itemTrackingType === "Batch",
+                requiresSerialTracking:
+                  child.data.itemTrackingType === "Serial",
+                unitOfMeasureCode: child.data.unitOfMeasureCode,
+                unitCost: child.data.unitCost,
+                itemScrapPercentage,
+                shelfId: await getShelfId(
+                  trx,
+                  child.data.itemId,
+                  job.data?.locationId ?? "",
+                  // @ts-ignore: shelfIds is a dynamic field
+                  child.data.shelfIds?.[job.data.locationId] ?? undefined
+                ),
+                companyId,
+                createdBy: userId,
+                customFields: {},
+              };
+            };
 
             const madeMaterials: Database["public"]["Tables"]["jobMaterial"]["Insert"][] =
               [];
@@ -1322,7 +1348,7 @@ serve(async (req: Request) => {
           supplierProcesses?.data
         );
 
-        await db.transaction().execute(async (trx) => {
+        await db.transaction().execute(async (trx: Transaction<KyselyDatabase>) => {
           // Delete existing quoteMakeMethod, quoteMakeMethodOperation, quoteMakeMethodMaterial
           await Promise.all([
             trx
@@ -3788,6 +3814,16 @@ serve(async (req: Request) => {
                 const newMaterialId = nanoid();
                 quoteMaterialIdToJobMaterialId[child.id] = newMaterialId;
 
+                // Get scrap percentage for this item
+                const itemReplenishment = await trx
+                  .selectFrom("itemReplenishment")
+                  .select("scrapPercentage")
+                  .where("itemId", "=", child.data.itemId)
+                  .executeTakeFirst();
+                const itemScrapPercentage = Number(
+                  itemReplenishment?.scrapPercentage ?? 0
+                );
+
                 jobMaterialInserts.push({
                   id: newMaterialId,
                   jobId,
@@ -3804,6 +3840,7 @@ serve(async (req: Request) => {
                           child.data.quoteMakeMethodId
                         ],
                   quantity: child.data.quantity,
+                  itemScrapPercentage,
                   shelfId: await getShelfId(
                     trx,
                     child.data.itemId,

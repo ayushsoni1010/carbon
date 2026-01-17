@@ -163,6 +163,13 @@ export async function convertSalesOrderLinesToJobs(
           companyId
         );
 
+        // Calculate scrap quantity based on item's scrap percentage
+        const scrapPercentage = manufacturing.data?.scrapPercentage ?? 0;
+        const scrapQuantity =
+          scrapPercentage > 0
+            ? Math.ceil(jobQuantity * (scrapPercentage / 100))
+            : 0;
+
         const data = {
           customerId: salesOrder.data?.customerId ?? undefined,
           deadlineType: "Hard Deadline" as const,
@@ -180,7 +187,7 @@ export async function convertSalesOrderLinesToJobs(
           quoteLineId: quoteId ? line.id : undefined,
           salesOrderId: salesOrderId ?? undefined,
           salesOrderLineId: line.id,
-          scrapQuantity: 0,
+          scrapQuantity,
           shelfId: shelfId ?? undefined,
           unitOfMeasureCode: line.unitOfMeasureCode ?? "EA"
         };

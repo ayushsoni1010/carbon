@@ -869,7 +869,17 @@ function JobCompleteModal({
   );
   const [hasTrackedQuantity, setHasTrackedQuantity] = useState<boolean>(false);
 
+  // Leftover handling state
+  const [leftoverAction, setLeftoverAction] = useState<
+    "ship" | "receive" | "split" | "discard" | undefined
+  >(undefined);
+  const [leftoverShipQuantity, setLeftoverShipQuantity] = useState<number>(0);
+  const [leftoverReceiveQuantity, setLeftoverReceiveQuantity] =
+    useState<number>(0);
+
   const makeToOrder = !!job?.salesOrderId && !!job?.salesOrderLineId;
+  const leftoverQuantity = Math.max(0, quantityComplete - (job?.quantity ?? 0));
+  const hasLeftover = leftoverQuantity > 0;
 
   const getJobData = async () => {
     if (!carbon) return;
@@ -924,11 +934,33 @@ function JobCompleteModal({
     getJobData();
   });
 
+  // Update leftover quantities when action changes
+  const handleLeftoverActionChange = (
+    action: "ship" | "receive" | "split" | "discard"
+  ) => {
+    setLeftoverAction(action);
+    if (action === "ship") {
+      setLeftoverShipQuantity(leftoverQuantity);
+      setLeftoverReceiveQuantity(0);
+    } else if (action === "receive") {
+      setLeftoverShipQuantity(0);
+      setLeftoverReceiveQuantity(leftoverQuantity);
+    } else if (action === "split") {
+      // Default to half and half, user can adjust
+      const halfQty = Math.floor(leftoverQuantity / 2);
+      setLeftoverShipQuantity(halfQty);
+      setLeftoverReceiveQuantity(leftoverQuantity - halfQty);
+    } else {
+      setLeftoverShipQuantity(0);
+      setLeftoverReceiveQuantity(0);
+    }
+  };
+
   if (!job) return null;
 
   return (
     <Modal open onOpenChange={onClose}>
-      <ModalContent>
+      <ModalContent size={hasLeftover ? "large" : "medium"}>
         {loading ? (
           <ModalBody>
             <div className="flex flex-col h-[118px] w-full items-center justify-center gap-2">
@@ -964,6 +996,15 @@ function JobCompleteModal({
             </ModalHeader>
             <Hidden name="salesOrderId" />
             <Hidden name="salesOrderLineId" />
+            <Hidden name="leftoverAction" value={leftoverAction} />
+            <Hidden
+              name="leftoverShipQuantity"
+              value={leftoverShipQuantity.toString()}
+            />
+            <Hidden
+              name="leftoverReceiveQuantity"
+              value={leftoverReceiveQuantity.toString()}
+            />
             {makeToOrder && (
               <>
                 <Hidden name="locationId" />
@@ -989,6 +1030,137 @@ function JobCompleteModal({
                   onChange={(value) => setQuantityComplete(value)}
                   isReadOnly={hasTrackedQuantity}
                 />
+
+                {hasLeftover && (
+                  <>
+                    <Alert>
+                      <LuPackage />
+                      <AlertTitle>Leftover Parts Detected</AlertTitle>
+                      <AlertDescription>
+                        You completed {leftoverQuantity} more{" "}
+                        {leftoverQuantity === 1 ? "part" : "parts"} than the
+                        ordered quantity of {job.quantity}. What would you like
+                        to do with the extra parts?
+                      </AlertDescription>
+                    </Alert>
+
+                    <div className="grid grid-cols-2 gap-2 w-full">
+                      {makeToOrder && (
+                        <Button
+                          variant={
+                            leftoverAction === "ship" ? "primary" : "secondary"
+                          }
+                          onClick={() => handleLeftoverActionChange("ship")}
+                          type="button"
+                          className="h-auto py-3"
+                        >
+                          <VStack spacing={1}>
+                            <span>Ship to Customer</span>
+                            <span className="text-xs opacity-70">
+                              Include extra parts in shipment
+                            </span>
+                          </VStack>
+                        </Button>
+                      )}
+                      <Button
+                        variant={
+                          leftoverAction === "receive" ? "primary" : "secondary"
+                        }
+                        onClick={() => handleLeftoverActionChange("receive")}
+                        type="button"
+                        className="h-auto py-3"
+                      >
+                        <VStack spacing={1}>
+                          <span>Receive to Inventory</span>
+                          <span className="text-xs opacity-70">
+                            Add to stock for future use
+                          </span>
+                        </VStack>
+                      </Button>
+                      {makeToOrder && (
+                        <Button
+                          variant={
+                            leftoverAction === "split" ? "primary" : "secondary"
+                          }
+                          onClick={() => handleLeftoverActionChange("split")}
+                          type="button"
+                          className="h-auto py-3"
+                        >
+                          <VStack spacing={1}>
+                            <span>Split</span>
+                            <span className="text-xs opacity-70">
+                              Ship some, stock some
+                            </span>
+                          </VStack>
+                        </Button>
+                      )}
+                      <Button
+                        variant={
+                          leftoverAction === "discard" ? "primary" : "secondary"
+                        }
+                        onClick={() => handleLeftoverActionChange("discard")}
+                        type="button"
+                        className="h-auto py-3"
+                      >
+                        <VStack spacing={1}>
+                          <span>Discard</span>
+                          <span className="text-xs opacity-70">
+                            No action needed
+                          </span>
+                        </VStack>
+                      </Button>
+                    </div>
+
+                    {leftoverAction === "split" && (
+                      <HStack className="w-full">
+                        <div className="flex-1">
+                          <label className="text-sm font-medium">
+                            Ship to Customer
+                          </label>
+                          <input
+                            type="number"
+                            className="w-full mt-1 px-3 py-2 border rounded-md"
+                            value={leftoverShipQuantity}
+                            onChange={(e) => {
+                              const shipQty = Math.min(
+                                Number(e.target.value),
+                                leftoverQuantity
+                              );
+                              setLeftoverShipQuantity(shipQty);
+                              setLeftoverReceiveQuantity(
+                                leftoverQuantity - shipQty
+                              );
+                            }}
+                            min={0}
+                            max={leftoverQuantity}
+                          />
+                        </div>
+                        <div className="flex-1">
+                          <label className="text-sm font-medium">
+                            Receive to Inventory
+                          </label>
+                          <input
+                            type="number"
+                            className="w-full mt-1 px-3 py-2 border rounded-md"
+                            value={leftoverReceiveQuantity}
+                            onChange={(e) => {
+                              const receiveQty = Math.min(
+                                Number(e.target.value),
+                                leftoverQuantity
+                              );
+                              setLeftoverReceiveQuantity(receiveQty);
+                              setLeftoverShipQuantity(
+                                leftoverQuantity - receiveQty
+                              );
+                            }}
+                            min={0}
+                            max={leftoverQuantity}
+                          />
+                        </div>
+                      </HStack>
+                    )}
+                  </>
+                )}
               </VStack>
             </ModalBody>
             <ModalFooter>
@@ -996,7 +1168,9 @@ function JobCompleteModal({
                 Cancel
               </Button>
 
-              <Button type="submit">Complete Job</Button>
+              <Button type="submit" isDisabled={hasLeftover && !leftoverAction}>
+                Complete Job
+              </Button>
             </ModalFooter>
           </ValidatedForm>
         )}
