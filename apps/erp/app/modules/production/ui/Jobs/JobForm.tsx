@@ -311,7 +311,7 @@ const JobForm = ({ initialValues }: JobFormProps) => {
                       />
                       <NumberControlled
                         name="scrapQuantity"
-                        label="Scrap Quantity"
+                        label="Estimated Scrap Quantity"
                         value={itemData.scrapQuantity}
                         onChange={(value) =>
                           setItemData((prev) => ({
