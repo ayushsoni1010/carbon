@@ -48,14 +48,13 @@ import {
   LuClipboardList,
   LuClock,
   LuEllipsisVertical,
-  LuEye,
-  LuFile,
   LuHardHat,
   LuList,
   LuLoaderCircle,
   LuPackage,
   LuPanelLeft,
   LuPanelRight,
+  LuQrCode,
   LuSettings,
   LuShoppingCart,
   LuSquareSigma,
@@ -202,6 +201,16 @@ const JobHeader = () => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56">
+              <DropdownMenuItem asChild>
+                <a
+                  target="_blank"
+                  href={path.to.file.jobTravelerByJobId(jobId)}
+                  rel="noreferrer"
+                >
+                  <DropdownMenuIcon icon={<LuQrCode />} />
+                  Job Traveler
+                </a>
+              </DropdownMenuItem>
               <DropdownMenuRadioGroup
                 value={currentValue}
                 onValueChange={(option) => {
@@ -227,30 +236,6 @@ const JobHeader = () => {
                   </DropdownMenuRadioItem>
                 ))}
               </DropdownMenuRadioGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
-
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                leftIcon={<LuEye />}
-                variant="secondary"
-                rightIcon={<LuChevronDown />}
-              >
-                Preview
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent>
-              <DropdownMenuItem asChild>
-                <a
-                  target="_blank"
-                  href={path.to.file.jobTravelerByJobId(jobId)}
-                  rel="noreferrer"
-                >
-                  <DropdownMenuIcon icon={<LuFile />} />
-                  Job Traveler
-                </a>
-              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
@@ -865,7 +850,7 @@ function JobCompleteModal({
   );
 
   const [quantityComplete, setQuantityComplete] = useState<number>(
-    job?.quantity ?? 0
+    job?.quantityComplete ?? 0
   );
   const [hasTrackedQuantity, setHasTrackedQuantity] = useState<boolean>(false);
 
@@ -1114,38 +1099,29 @@ function JobCompleteModal({
                     {leftoverAction === "split" && (
                       <HStack className="w-full">
                         <div className="flex-1">
-                          <label className="text-sm font-medium">
-                            Ship to Customer
-                          </label>
-                          <input
-                            type="number"
-                            className="w-full mt-1 px-3 py-2 border rounded-md"
+                          <NumberControlled
+                            name="leftoverShipQuantity"
+                            label="Ship to Customer"
                             value={leftoverShipQuantity}
-                            onChange={(e) => {
-                              const shipQty = Math.min(
-                                Number(e.target.value),
-                                leftoverQuantity
-                              );
+                            onChange={(value) => {
+                              const shipQty = Math.min(value, leftoverQuantity);
                               setLeftoverShipQuantity(shipQty);
                               setLeftoverReceiveQuantity(
                                 leftoverQuantity - shipQty
                               );
                             }}
-                            min={0}
-                            max={leftoverQuantity}
+                            minValue={0}
+                            maxValue={leftoverQuantity}
                           />
                         </div>
                         <div className="flex-1">
-                          <label className="text-sm font-medium">
-                            Receive to Inventory
-                          </label>
-                          <input
-                            type="number"
-                            className="w-full mt-1 px-3 py-2 border rounded-md"
+                          <NumberControlled
+                            name="leftoverReceiveQuantity"
+                            label="Receive to Inventory"
                             value={leftoverReceiveQuantity}
-                            onChange={(e) => {
+                            onChange={(value) => {
                               const receiveQty = Math.min(
-                                Number(e.target.value),
+                                value,
                                 leftoverQuantity
                               );
                               setLeftoverReceiveQuantity(receiveQty);
@@ -1153,8 +1129,8 @@ function JobCompleteModal({
                                 leftoverQuantity - receiveQty
                               );
                             }}
-                            min={0}
-                            max={leftoverQuantity}
+                            minValue={0}
+                            maxValue={leftoverQuantity}
                           />
                         </div>
                       </HStack>

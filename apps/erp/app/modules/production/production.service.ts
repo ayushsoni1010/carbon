@@ -2675,7 +2675,9 @@ export async function upsertMaintenanceDispatch(
   if ("createdBy" in dispatch) {
     return client
       .from("maintenanceDispatch")
-      .insert([dispatch])
+      .insert([
+        { ...dispatch, severity: dispatch.severity ?? "Support Required" }
+      ])
       .select("id")
       .single();
   } else {
