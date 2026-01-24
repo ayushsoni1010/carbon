@@ -23,17 +23,19 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-  useDisclosure
+  useDisclosure,
+  useMount
 } from "@carbon/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { LuFilter } from "react-icons/lu";
-
+import { useFetcher } from "react-router";
 import ConsumableForm from "~/modules/items/ui/Consumables/ConsumableForm";
 import MaterialForm from "~/modules/items/ui/Materials/MaterialForm";
 import PartForm from "~/modules/items/ui/Parts/PartForm";
 import ToolForm from "~/modules/items/ui/Tools/ToolForm";
 import { type MethodItemType, methodItemType } from "~/modules/shared";
 import { useItems } from "~/stores";
+import { path } from "~/utils/path";
 import { MethodItemTypeIcon } from "../Icons";
 
 type ItemSelectProps = Omit<ComboboxProps, "options" | "type" | "inline"> & {
@@ -427,3 +429,19 @@ const Item = ({
 Item.displayName = "Item";
 
 export default Item;
+
+export const useConfigurableItems = () => {
+  const configurableItemsLoader = useFetcher<{
+    data: { itemId: string }[] | null;
+  }>();
+
+  useMount(() => {
+    configurableItemsLoader.load(path.to.api.itemConfigurable);
+  });
+
+  const configurableItemIds = useMemo(() => {
+    return (configurableItemsLoader.data?.data ?? []).map((c) => c.itemId);
+  }, [configurableItemsLoader.data?.data]);
+
+  return configurableItemIds;
+};

@@ -40,7 +40,7 @@ import {
 import { RiProgress4Line } from "react-icons/ri";
 import { Link, useFetcher, useLocation, useParams } from "react-router";
 import { ConfiguratorModal } from "~/components/Configurator/ConfiguratorForm";
-import { Hidden, Item, Submit } from "~/components/Form";
+import { Hidden, Item, Submit, useConfigurableItems } from "~/components/Form";
 import type { Tree } from "~/components/TreeView";
 import { usePermissions, useRouteData, useUser } from "~/hooks";
 import {
@@ -124,7 +124,7 @@ const JobMakeMethodTools = ({ makeMethod }: { makeMethod?: JobMakeMethod }) => {
   const configuratorModal = useDisclosure();
 
   // State for configurable items
-  const [configurableItemIds, setConfigurableItemIds] = useState<string[]>([]);
+  const configurableItemIds = useConfigurableItems();
   const [selectedConfigureItemId, setSelectedConfigureItemId] = useState<
     string | null
   >(null);
@@ -132,24 +132,6 @@ const JobMakeMethodTools = ({ makeMethod }: { makeMethod?: JobMakeMethod }) => {
     groups: ConfigurationParameterGroup[];
     parameters: ConfigurationParameter[];
   }>({ groups: [], parameters: [] });
-
-  const getConfigurableItems = async () => {
-    if (carbon) {
-      // TODO: cache these in client loader called through fetcher
-      const { data, error } = await carbon
-        .from("itemReplenishment")
-        .select("itemId")
-        .eq("requiresConfiguration", true)
-        .eq("companyId", companyId);
-
-      if (error) {
-        console.error(error);
-        return;
-      }
-
-      setConfigurableItemIds(data?.map((d) => d.itemId) ?? []);
-    }
-  };
 
   const handleConfigureItemSelect = async (itemId: string | null) => {
     if (!itemId || !carbon) return;
@@ -259,7 +241,6 @@ const JobMakeMethodTools = ({ makeMethod }: { makeMethod?: JobMakeMethod }) => {
     if (isJobMethod && routeData?.job.itemId) {
       getMakeMethods(routeData.job.itemId);
     }
-    getConfigurableItems();
   });
 
   return (
@@ -288,7 +269,7 @@ const JobMakeMethodTools = ({ makeMethod }: { makeMethod?: JobMakeMethod }) => {
                   Save Method
                 </MenubarItem>
 
-                {configurableItemIds.length > 0 && (
+                {configurableItemIds.length > 0 && isJobMethod && (
                   <MenubarItem
                     leftIcon={<LuSettings />}
                     isDisabled={
